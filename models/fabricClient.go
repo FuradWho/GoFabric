@@ -16,6 +16,9 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	packager "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/gopackager"
+	lcpackager "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/lifecycle"
 )
 
 const (
@@ -225,6 +228,9 @@ func orgTargetPeers(orgs []string, configBackend ...core.ConfigBackend) ([]strin
 	}
 	return peers, nil
 }
+
+
+
 
 
 //func (f *FabricClient) InstantiateChaincode(chaincodeId, chaincodePath, version string, policy string, args [][]byte) (string, error) {
