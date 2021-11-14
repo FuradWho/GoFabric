@@ -1,122 +1,24 @@
 package common
 
 import (
-	"fmt"
-	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
-	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/sirupsen/logrus"
 	"gofabric/models"
 	"io/ioutil"
-	"log"
 )
-
-
 
 const (
 	channelId = "mychannel"
 	channelTx = "/usr/local/hyper/test2/configtx/channel-artifacts/mychannel.tx"
 	connectConfigDir = "connect-config/channel-connection.yaml"
-	chaincodeId = "mycc"
+	chaincodeId = "mycc_0"
 	chaincodePath = "newchaincode/test"
 	ccVersion = "0"
 
 )
 
 var fabricClient *models.FabricClient
-
+var log = logrus.New()
 var orgs = []string{"org1","org2"}
-
-func CreateUser(userName string,password string,userType string,orgName string)  {
-
-	sdk, err := fabsdk.New(config.FromFile("connect-config/channel-connection.yaml"))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	ctx := sdk.Context()
-	client, err := mspclient.New(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	info, err := client.GetCAInfo()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(info.CAName)
-	fmt.Println(info.Version)
-
-	affiliations, err := client.GetAllIdentities()
-	if err != nil {
-		log.Printf("%s \n",err)
-	}
-
-	for _ , info := range affiliations{
-		fmt.Println(info.ID)
-		fmt.Println(info.Type)
-		fmt.Println(info.Attributes)
-		fmt.Println("----------------------")
-	}
-
-	a1 := mspclient.Attribute{
-		Name: "hf.Registrar.Roles",
-		Value:"client,orderer,peer,user",
-	}
-	a2 := mspclient.Attribute{
-		Name: "hf.Registrar.DelegateRoles",
-		Value:"client,orderer,peer,user",
-	}
-	a3 := mspclient.Attribute{
-		Name: "hf.Registrar.Attributes",
-		Value:"*",
-	}
-	a4 := mspclient.Attribute{
-		Name: "hf.GenCRL",
-		Value:"true",
-	}
-	a5 := mspclient.Attribute{
-		Name: "hf.Revoker",
-		Value:"true",
-	}
-	a6 := mspclient.Attribute{
-		Name: "hf.AffiliationMgr",
-		Value:"true",
-	}
-	a7 := mspclient.Attribute{
-		Name: "hf.IntermediateCA",
-		Value:"true",
-	}
-
-	var attributes []mspclient.Attribute
-	attributes = append(attributes,a1,a2,a3,a4,a5,a6,a7)
-
-	req := &mspclient.RegistrationRequest{
-		Name: userName,
-		Type: userType,
-		CAName: "ca-org2",
-		Secret: password,
-		Attributes: attributes,
-		Affiliation: orgName,
-	}
-	register, err := client.Register(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(register)
-
-	err = client.Enroll(userName,mspclient.WithSecret(password))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	signingIdentity, err := client.GetSigningIdentity(userName)
-	if err != nil {
-		fmt.Printf("GetSigningIdentity : %s \n",err)
-	}
-	fmt.Println(signingIdentity.Identifier().ID)
-}
 
 func NewFabricClient()  {
 	
@@ -127,10 +29,10 @@ func NewFabricClient()  {
 
 	err := fabricClient.Setup()
 	if err != nil {
-		log.Panicf("Failed to setup fabricclient: %s \n",err)
+		log.Errorf("Failed to New Fabric Client: %s \n",err)
 	}
-	
 }
+
 
 func CreateChannel()  {
 	err := fabricClient.CreateChannel(channelTx)
@@ -151,9 +53,33 @@ func InstallChaincode()  {
 
 }
 
+//func PackageCC() (string, []byte) {
+//	return fabricClient.PackageCC()
+//}
 
+func InstallCC(label string, ccPkg []byte)  {
+	fabricClient.InstallCC(label,ccPkg)
+}
 
+func GetInstalledCCPackage(label string)  {
+	fabricClient.GetInstalledCCPackage(label)
+}
 
+func QueryInstalled(label string, packageID string)  {
+	fabricClient.QueryInstalled(label,packageID)
+}
+
+func ApproveCC(label string)  {
+	fabricClient.ApproveCC(label)
+}
+
+func CreateCC(){
+	fabricClient.CreateCC(chaincodeId,chaincodePath,ccVersion)
+}
+
+func QueryLedger(){
+	fabricClient.QueryLedger()
+}
 
 
 /*

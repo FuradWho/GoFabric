@@ -6,6 +6,7 @@ require (
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/iris-contrib/swagger/v12 v12.0.1
 	github.com/kataras/iris/v12 v12.1.8
+	github.com/sirupsen/logrus v1.3.0
 )
 
 require (
@@ -17,6 +18,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 // indirect
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cloudflare/cfssl v1.4.1 // indirect
@@ -33,10 +35,13 @@ require (
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
+	github.com/google/go-cmp v0.5.2 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hyperledger/fabric-config v0.0.5 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23 // indirect
+	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/iris-contrib/blackfriday v2.0.0+incompatible // indirect
 	github.com/iris-contrib/jade v1.1.3 // indirect
 	github.com/iris-contrib/pongo2 v0.0.1 // indirect
@@ -45,7 +50,8 @@ require (
 	github.com/kataras/golog v0.0.10 // indirect
 	github.com/kataras/pio v0.0.2 // indirect
 	github.com/kataras/sitemap v0.0.5 // indirect
-	github.com/klauspost/compress v1.9.7 // indirect
+	github.com/klauspost/compress v1.13.4 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
@@ -54,6 +60,7 @@ require (
 	github.com/mitchellh/mapstructure v1.3.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -63,7 +70,9 @@ require (
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/spf13/afero v1.3.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -71,16 +80,23 @@ require (
 	github.com/spf13/viper v1.3.2 // indirect
 	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/swaggo/swag v1.6.5 // indirect
+	github.com/valyala/fasthttp v1.31.0 // indirect
 	github.com/weppos/publicsuffix-go v0.5.0 // indirect
+	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
+	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
+	github.com/yudai/gojsondiff v1.0.0 // indirect
+	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e // indirect
 	github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb // indirect
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
-	golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
+	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
+	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ini.v1 v1.51.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2 // indirect

@@ -1,7 +1,7 @@
 version: 1.0.0
 
 client:
-  organization: org2
+  organization: org1
   logging:
     level: info
 
@@ -25,25 +25,37 @@ client:
   tlsCerts:
     systemCertPool: true
     client:
-      keyfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/tls-msp/keystore/key.pem
-      certfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/tls-msp/signcerts/cert.pem
+      keyfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/tls-msp/keystore/key.pem
+      certfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/tls-msp/signcerts/cert.pem
 
 channels:
-  channeltest:
+  mychannel:
     orderers:
       - orderer1-org0
     peers:
-      org1:
+      peer1-org1:
         endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
         eventSource: true
 
-      org2:
-        endorsingPeer: true
-        chaincodeQuery: true
-        ledgerQuery: true
-        eventSource: true
+#      peer2-org1:
+#        endorsingPeer: true
+#        chaincodeQuery: true
+#        ledgerQuery: true
+#        eventSource: true
+#
+#      peer1-org2:
+#        endorsingPeer: true
+#        chaincodeQuery: true
+#        ledgerQuery: true
+#        eventSource: true
+#
+#      peer2-org2:
+#        endorsingPeer: true
+#        chaincodeQuery: true
+#        ledgerQuery: true
+#        eventSource: true
 
     policies:
       queryChannelConfig:
@@ -54,11 +66,19 @@ channels:
           initialBackoff: 500ms
           maxBackoff: 5s
           backoffFactor: 2.0
+      eventService:
+        resolverStrategy: PreferOrg
+        balancer: Random
+        blockHeightLagThreshold: 5
+        reconnectBlockHeightLagThreshold: 10
+        peerMonitorPeriod: 5s
+
+
 
 organizations:
   org1:
     mspid: org1MSP
-    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/msp
+    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/msp
     peers:
       - peer1-org1
       - peer2-org1
@@ -67,7 +87,7 @@ organizations:
 
   org2:
     mspid: org2MSP
-    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/msp
+    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/msp
     peers:
       - peer1-org2
       - peer2-org2
@@ -86,9 +106,8 @@ orderers:
       keep-alive-time: 0s
       keep-alive-timeout: 20s
       keep-alive-permit: false
-      fail-fast: false
-      allow-insecure: false
-
+      fail-fast: true
+      allow-insecure: true
     tlsCACerts:
       path: /usr/local/hyper/test2/crypto-config/ordererOrganizations/org0/orderers/orderer1-org0/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 
@@ -100,46 +119,46 @@ peers:
       keep-alive-time: 0s
       keep-alive-timeout: 20s
       keep-alive-permit: false
-      fail-fast: false
-      allow-insecure: false
+      fail-fast: true
+      allow-insecure: true
     tlsCACerts:
       path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/peers/peer1/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 
-  peer2-org1:
-    url: grpcs://192.168.175.142:18051
-    grpcOptions:
-      ssl-target-name-override: peer2-org1
-      keep-alive-time: 0s
-      keep-alive-timeout: 20s
-      keep-alive-permit: false
-      fail-fast: false
-      allow-insecure: false
-    tlsCACerts:
-      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/peers/peer2/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
-
-  peer1-org2:
-    url: grpcs://192.168.175.142:19051
-    grpcOptions:
-      ssl-target-name-override: peer1-org2
-      keep-alive-time: 0s
-      keep-alive-timeout: 20s
-      keep-alive-permit: false
-      fail-fast: false
-      allow-insecure: false
-    tlsCACerts:
-      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/peers/peer1/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
-
-  peer2-org2:
-    url: grpcs://192.168.175.142:10051
-    grpcOptions:
-      ssl-target-name-override: peer2-org2
-      keep-alive-time: 0s
-      keep-alive-timeout: 20s
-      keep-alive-permit: false
-      fail-fast: false
-      allow-insecure: false
-    tlsCACerts:
-      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/peers/peer2/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
+#  peer2-org1:
+#    url: grpcs://192.168.175.142:18051
+#    grpcOptions:
+#      ssl-target-name-override: peer2-org1
+#      keep-alive-time: 0s
+#      keep-alive-timeout: 20s
+#      keep-alive-permit: false
+#      fail-fast: true
+#      allow-insecure: true
+#    tlsCACerts:
+#      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/peers/peer2/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
+#
+#  peer1-org2:
+#    url: grpcs://192.168.175.142:19051
+#    grpcOptions:
+#      ssl-target-name-override: peer1-org2
+#      keep-alive-time: 0s
+#      keep-alive-timeout: 20s
+#      keep-alive-permit: false
+#      fail-fast: true
+#      allow-insecure: true
+#    tlsCACerts:
+#      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/peers/peer1/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
+#
+#  peer2-org2:
+#    url: grpcs://192.168.175.142:10051
+#    grpcOptions:
+#      ssl-target-name-override: peer2-org2
+#      keep-alive-time: 0s
+#      keep-alive-timeout: 20s
+#      keep-alive-permit: false
+#      fail-fast: true
+#      allow-insecure: true
+#    tlsCACerts:
+#      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/peers/peer2/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 
 entityMatchers:
   peer:
