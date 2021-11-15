@@ -28,6 +28,12 @@ func StartIris() {
 	channelApi := app.Party("/channel")
 	{
 		channelApi.Post("/CreateChannel",services.CreateChannel)
+		channelApi.Post("/JoinChannel",services.JoinChannel)
+	}
+
+	ccApi := app.Party("/cc")
+	{
+		ccApi.Post("/CreateCC",services.CreateCC)
 	}
 
 	 app.Listen(":9099")

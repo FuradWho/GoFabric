@@ -21,10 +21,20 @@ type UserData struct {
 
 type CreateChannelInfo struct {
 
-	ChannelTx string `json:"channel_tx"`
 	Org string `json:"org"`
 	UserName string `json:"user_name"`
 	ChannelId string `json:"channel_id"`
+
+}
+
+type CcInfo struct {
+
+	ChaincodeId string
+	ChaincodePath string
+	Version string
+	Org string
+	UserName string
+	ChannelId string
 
 }
 

@@ -29,7 +29,7 @@ client:
       certfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/tls-msp/signcerts/cert.pem
 
 channels:
-  mychannel:
+  channel2:
     orderers:
       - orderer1-org0
     peers:
