@@ -34,16 +34,18 @@ func NewFabricClient()  {
 }
 
 
-func CreateChannel()  {
-	err := fabricClient.CreateChannel(channelTx)
-	if err != nil {
-		log.Panicf("Failed to CreateChannel: %s \n",err)
-	}
-	err = fabricClient.JoinChannel()
-	if err != nil {
-		log.Panicf("Failed to JoinChannel: %s \n",err)
-	}
-}
+//func CreateChannel()  {
+//	err := fabricClient.CreateChannel(channelTx)
+//	if err != nil {
+//		log.Panicf("Failed to CreateChannel: %s \n",err)
+//	}
+//	err = fabricClient.JoinChannel()
+//	if err != nil {
+//		log.Panicf("Failed to JoinChannel: %s \n",err)
+//	}
+//}
+
+
 func InstallChaincode()  {
 
 	err := fabricClient.InstallChaincode(chaincodeId,chaincodePath,ccVersion)
@@ -57,25 +59,25 @@ func InstallChaincode()  {
 //	return fabricClient.PackageCC()
 //}
 
-func InstallCC(label string, ccPkg []byte)  {
-	fabricClient.InstallCC(label,ccPkg)
-}
-
-func GetInstalledCCPackage(label string)  {
-	fabricClient.GetInstalledCCPackage(label)
-}
-
-func QueryInstalled(label string, packageID string)  {
-	fabricClient.QueryInstalled(label,packageID)
-}
-
-func ApproveCC(label string)  {
-	fabricClient.ApproveCC(label)
-}
-
-func CreateCC(){
-	fabricClient.CreateCC(chaincodeId,chaincodePath,ccVersion)
-}
+//func InstallCC(label string, ccPkg []byte)  {
+//	fabricClient.InstallCC(label,ccPkg)
+//}
+//
+//func GetInstalledCCPackage(label string)  {
+//	fabricClient.GetInstalledCCPackage(label)
+//}
+//
+//func QueryInstalled(label string, packageID string)  {
+//	fabricClient.QueryInstalled(label,packageID)
+//}
+//
+//func ApproveCC(label string)  {
+//	fabricClient.ApproveCC(label)
+//}
+//
+//func CreateCC(){
+//	fabricClient.CreateCC(chaincodeId,chaincodePath,ccVersion)
+//}
 
 func QueryLedger(){
 	fabricClient.QueryLedger()

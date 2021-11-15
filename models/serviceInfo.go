@@ -19,6 +19,16 @@ type UserData struct {
 	PubFile string `json:"pub_file"`
 }
 
+type CreateChannelInfo struct {
+
+	ChannelTx string `json:"channel_tx"`
+	Org string `json:"org"`
+	UserName string `json:"user_name"`
+	ChannelId string `json:"channel_id"`
+
+}
+
+
 func SuccessData(data interface{}) *ResponseBean{
 	return &ResponseBean{
 		200,

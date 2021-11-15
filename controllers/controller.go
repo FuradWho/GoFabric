@@ -25,6 +25,11 @@ func StartIris() {
 		usersApi.Post("/CreateUser",services.CreateUser)
 	}
 
+	channelApi := app.Party("/channel")
+	{
+		channelApi.Post("/CreateChannel",services.CreateChannel)
+	}
+
 	 app.Listen(":9099")
 
 }

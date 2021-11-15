@@ -8,7 +8,6 @@ import (
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -41,7 +40,7 @@ type FabricClient struct {
 	userName string
 	userOrg string
 
-	resmgmtClients []*resmgmt.Client
+	resmgmtClients map[string]*resmgmt.Client
 	sdk *fabsdk.FabricSDK
 	retry resmgmt.RequestOption
 }
@@ -66,13 +65,14 @@ func (f *FabricClient) Setup() error {
 	}
 	f.sdk = sdk
 
-	resmgmtClients := make([]*resmgmt.Client,0)
+	resmgmtClients := make(map[string]*resmgmt.Client)
 	for _, v := range f.Orgs {
 		resmgmtClient , err := resmgmt.New(sdk.Context(fabsdk.WithUser(Admin),fabsdk.WithOrg(v)))
 		if err != nil {
 			log.Errorf("Failed to create channel management client : %s \n",err)
+			return err
 		}
-		resmgmtClients = append(resmgmtClients,resmgmtClient)
+		resmgmtClients[v] = resmgmtClient
 	}
 
 	f.resmgmtClients = resmgmtClients
@@ -198,7 +198,6 @@ func (f *FabricClient) CreateUser(userName string,secret string,userType string,
 	return priFile,pubFile,nil
 }
 
-
 func (f *FabricClient) GetKeyFile(id msp.SigningIdentity) (string,string){
 
 	priFile := hex.EncodeToString(id.PrivateKey().SKI())+"_sk"
@@ -207,43 +206,46 @@ func (f *FabricClient) GetKeyFile(id msp.SigningIdentity) (string,string){
 	return priFile,pubFile
 }
 
+func (f *FabricClient) CreateChannel(channelTx ,org ,userName , channelId string) (string , error) {
 
-func (f *FabricClient) CreateChannel(channelTx string) error {
-
-	mspClient , err := mspclient.New(f.sdk.Context(),mspclient.WithOrg(f.Orgs[0]))
+	mspClient , err := mspclient.New(f.sdk.Context(),mspclient.WithOrg(org))
 	if err != nil {
-		log.Printf("Failed to new mspClient : %s \n",err)
-		return err
+		log.Errorf("Failed to new mspClient : %s \n",err)
+		return "", err
 	}
 
-	adminidentity, err := mspClient.GetSigningIdentity(Admin)
+	adminidentity, err := mspClient.GetSigningIdentity(userName)
 	if err != nil {
-		log.Printf("Failed to get signIdentity : %s \n",err)
-		return err
+		log.Errorf("Failed to get signIdentity : %s \n",err)
+		return "" , err
 	}
 
 	req := resmgmt.SaveChannelRequest{
-		ChannelID: f.ChannelId,
+		ChannelID: channelId,
 		ChannelConfigPath: channelTx,
 		SigningIdentities: []msp.SigningIdentity{adminidentity},
 	}
 
-	txId , err := f.resmgmtClients[0].SaveChannel(req)
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(userName),fabsdk.WithOrg(org)))
 	if err != nil {
-		log.Printf("Failed to save channel : %s \n",err)
-		return err
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return "", err
 	}
 
-	fmt.Printf("txId : %s \n",txId)
-	return nil
-}
+	resp , err := resmgmtClient.SaveChannel(req)
+	if err != nil {
+		log.Errorf("Failed to save channel : %s \n",err)
+		return "", err
+	}
 
+	return string(resp.TransactionID), nil
+}
 
 func (f *FabricClient) UpdateChannel(anchorsTx []string) error {
 
-	for i, c := range f.resmgmtClients {
+	for org, c := range f.resmgmtClients {
 
-		mspClient, err := mspclient.New(f.sdk.Context(), mspclient.WithOrg(f.Orgs[i]))
+		mspClient, err := mspclient.New(f.sdk.Context(), mspclient.WithOrg(org))
 		if err != nil {
 			log.Printf("Failed to UpdateChannel : %s \n",err)
 			return err
@@ -255,7 +257,7 @@ func (f *FabricClient) UpdateChannel(anchorsTx []string) error {
 		}
 		req := resmgmt.SaveChannelRequest{
 			ChannelID:         f.ChannelId,
-			ChannelConfigPath: anchorsTx[i],
+			ChannelConfigPath: anchorsTx[0],
 			SigningIdentities: []msp.SigningIdentity{adminIdentity},
 		}
 		txId, err := c.SaveChannel(req, f.retry)
@@ -269,19 +271,23 @@ func (f *FabricClient) UpdateChannel(anchorsTx []string) error {
 	return nil
 }
 
-func (f *FabricClient) JoinChannel() error {
+func (f *FabricClient) JoinChannel(user , org string ) error {
 
-	for i, c := range f.resmgmtClients {
-		err := c.JoinChannel(f.ChannelId, f.retry)
-		if err != nil && !strings.Contains(err.Error(), "LedgerID already exists") {
-			log.Printf("Org peers failed to JoinChannel: %s \n", err)
-			return err
-		}
-		log.Printf("%s join channel", f.Orgs[i])
-
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
 	}
-	return nil
 
+	err = resmgmtClient.JoinChannel(f.ChannelId, f.retry)
+	if err != nil && !strings.Contains(err.Error(), "LedgerID already exists") {
+		log.Errorf("Org peers failed to JoinChannel: %s \n", err)
+		return err
+	}
+
+	log.Infof("%s join channel \n", org)
+
+	return nil
 }
 
 func (f *FabricClient) InstallChaincode(chaincodeId, chaincodePath, version string) error {
@@ -305,21 +311,22 @@ func (f *FabricClient) InstallChaincode(chaincodeId, chaincodePath, version stri
 		//	return err
 		//}
 		//log.Printf("%s \n", res)
-		configBackend , _ := f.sdk.Config()
-		targets, err := orgTargetPeers([]string{"org1"},configBackend )
-		if err != nil {
-			log.Printf("Failed to get targets:%s \n",err)
-		}
-		peer := targets[0]
 
-		installedCC, err := f.resmgmtClients[0].LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer))
-		if err != nil {
-			return err
-		}
-	for _, cc := range installedCC {
-		fmt.Println(cc.Label)
-		fmt.Println(cc.PackageID)
-	}
+	//	configBackend , _ := f.sdk.Config()
+	//	targets, err := orgTargetPeers([]string{"org1"},configBackend )
+	//	if err != nil {
+	//		log.Printf("Failed to get targets:%s \n",err)
+	//	}
+	//	peer := targets[0]
+	//
+	//	installedCC, err := f.resmgmtClients[0].LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer))
+	//	if err != nil {
+	//		return err
+	//	}
+	//for _, cc := range installedCC {
+	//	fmt.Println(cc.Label)
+	//	fmt.Println(cc.PackageID)
+	//}
 
 	//}
 
@@ -327,12 +334,14 @@ func (f *FabricClient) InstallChaincode(chaincodeId, chaincodePath, version stri
 }
 
 
-func orgTargetPeers(orgs []string, configBackend ...core.ConfigBackend) ([]string, error) {
+func (f *FabricClient) GetOrgsTargetPeers(orgs []string) ([]string, error) {
 
+	configBackend , _ := f.sdk.Config()
 	networkConfig := fab.NetworkConfig{}
 
-	err := lookup.New(configBackend...).UnmarshalKey("organizations", &networkConfig.Organizations)
+	err := lookup.New(configBackend).UnmarshalKey("organizations", &networkConfig.Organizations)
 	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n",err)
 		return nil, err
 	}
 
@@ -346,6 +355,29 @@ func orgTargetPeers(orgs []string, configBackend ...core.ConfigBackend) ([]strin
 	}
 	return peers, nil
 }
+
+func (f *FabricClient) GetOrgTargetPeers(org string) ([]string, error) {
+
+	configBackend , _ := f.sdk.Config()
+	networkConfig := fab.NetworkConfig{}
+
+	err := lookup.New(configBackend).UnmarshalKey("organizations", &networkConfig.Organizations)
+	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n",err)
+		return nil, err
+	}
+
+	var peers []string
+	orgConfig, ok := networkConfig.Organizations[strings.ToLower(org)]
+	if !ok {
+		log.Errorf("%s dont exeits",org)
+		return nil, errors.New("org dont in list")
+	}
+	peers = append(peers, orgConfig.Peers...)
+
+	return peers, nil
+}
+
 
 
 //func (f *FabricClient) PackageCC() (string, []byte) {
@@ -362,7 +394,7 @@ func orgTargetPeers(orgs []string, configBackend ...core.ConfigBackend) ([]strin
 //}
 
 
-func (f *FabricClient) InstallCC(label string, ccPkg []byte) {
+func (f *FabricClient) InstallCC(label string, ccPkg []byte , org string) {
 	installCCReq := resmgmt.LifecycleInstallCCRequest{
 		Label:   label,
 		Package: ccPkg,
@@ -370,7 +402,7 @@ func (f *FabricClient) InstallCC(label string, ccPkg []byte) {
 
 	packageID := lcpackager.ComputePackageID(installCCReq.Label, installCCReq.Package)
 
-	resp, err := f.resmgmtClients[0].LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	resp, err := f.resmgmtClients[org].LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Panicf("Failed to install chaincode : %s \n",err)
 	}
@@ -378,16 +410,16 @@ func (f *FabricClient) InstallCC(label string, ccPkg []byte) {
 	fmt.Println(resp[0].PackageID)
 }
 
-func (f *FabricClient) GetInstalledCCPackage(packageID string) {
-	_, err := f.resmgmtClients[0].LifecycleGetInstalledCCPackage(packageID,resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+func (f *FabricClient) GetInstalledCCPackage(packageID string , org string) {
+	_, err := f.resmgmtClients[org].LifecycleGetInstalledCCPackage(packageID,resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Panicf("Failed to GetInstalledCCPackage chaincode : %s \n",err)
 	}
 	//fmt.Println(resp)
 }
 
-func (f *FabricClient) QueryInstalled(label string, packageID string) {
-	resp, err := f.resmgmtClients[0].LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer2), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+func (f *FabricClient) QueryInstalled(label string, packageID string , org string) {
+	resp, err := f.resmgmtClients[org].LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer2), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Panicf("Failed to QueryInstalled chaincode : %s \n",err)
 	}
@@ -395,7 +427,7 @@ func (f *FabricClient) QueryInstalled(label string, packageID string) {
 	fmt.Println(resp[0].Label)
 }
 
-func  (f *FabricClient) ApproveCC( packageID string) {
+func  (f *FabricClient) ApproveCC( packageID string , org string) {
 	//queryApprovedCCReq := resmgmt.LifecycleQueryApprovedCCRequest{
 	//	Name:       "newcc0",
 	//	Sequence: 1,
@@ -421,7 +453,7 @@ func  (f *FabricClient) ApproveCC( packageID string) {
 	}
 	fmt.Println("!!!")
 
-	txnID, err := f.resmgmtClients[0].LifecycleApproveCC("mychannel", approveCCReq, resmgmt.WithTargetEndpoints(peer1), resmgmt.WithOrdererEndpoint("orderer1-org0"))
+	txnID, err := f.resmgmtClients[org].LifecycleApproveCC("mychannel", approveCCReq, resmgmt.WithTargetEndpoints(peer1), resmgmt.WithOrdererEndpoint("orderer1-org0"))
 	fmt.Println("???")
 	if err != nil {
 		log.Panicf("Failed to ApproveCC chaincode : %s \n",err)
@@ -456,14 +488,14 @@ func  (f *FabricClient) ApproveCC( packageID string) {
 //}
 
 
-func (f *FabricClient) CreateCC(chaincodeId, chaincodePath, version string) {
+func (f *FabricClient) CreateCC(chaincodeId, chaincodePath, version,org string) {
 	ccPkg, err := packager.NewCCPackage(chaincodePath, f.GoPath)
 	if err != nil {
 		log.Panicf("Failed to CreateCC :%s \n",err)
 	}
 	// Install example cc to org peers
 	installCCReq := resmgmt.InstallCCRequest{Name: chaincodeId, Path: chaincodePath, Version: version, Package: ccPkg}
-	_, err = f.resmgmtClients[0].InstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	_, err = f.resmgmtClients[org].InstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Panicf("Failed to CreateCC :%s \n",err)
 	}
@@ -472,7 +504,7 @@ func (f *FabricClient) CreateCC(chaincodeId, chaincodePath, version string) {
 	// Org resource manager will instantiate 'example_cc' on channel
 
 	initArgs := [][]byte{[]byte("init"),[]byte("a"), []byte("100"), []byte("b"), []byte("200")}
-	resp, err := f.resmgmtClients[0].InstantiateCC(
+	resp, err := f.resmgmtClients[org].InstantiateCC(
 		"mychannel",
 		resmgmt.InstantiateCCRequest{Name: chaincodeId, Path: chaincodePath, Version: version, Args: initArgs, Policy: ccPolicy},
 		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
