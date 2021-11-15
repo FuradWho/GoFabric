@@ -100,7 +100,7 @@ organizations:
 
 orderers:
   orderer1-org0:
-    url: grpcs://192.168.175.142:17050
+    url: grpcs://192.168.175.144:17050
     grpcOptions:
       ssl-target-name-override: orderer1-org0
       keep-alive-time: 0s
@@ -113,7 +113,7 @@ orderers:
 
 peers:
   peer1-org1:
-    url: grpcs://192.168.175.142:17051
+    url: grpcs://192.168.175.144:17051
     grpcOptions:
       ssl-target-name-override: peer1-org1
       keep-alive-time: 0s
@@ -125,7 +125,7 @@ peers:
       path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/peers/peer1/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 
 #  peer2-org1:
-#    url: grpcs://192.168.175.142:18051
+#    url: grpcs://192.168.175.144:18051
 #    grpcOptions:
 #      ssl-target-name-override: peer2-org1
 #      keep-alive-time: 0s
@@ -137,7 +137,7 @@ peers:
 #      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/peers/peer2/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 #
 #  peer1-org2:
-#    url: grpcs://192.168.175.142:19051
+#    url: grpcs://192.168.175.144:19051
 #    grpcOptions:
 #      ssl-target-name-override: peer1-org2
 #      keep-alive-time: 0s
@@ -149,7 +149,7 @@ peers:
 #      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/peers/peer1/tls-msp/tlscacerts/tls-0-0-0-0-17052.pem
 #
 #  peer2-org2:
-#    url: grpcs://192.168.175.142:10051
+#    url: grpcs://192.168.175.144:10051
 #    grpcOptions:
 #      ssl-target-name-override: peer2-org2
 #      keep-alive-time: 0s
@@ -163,28 +163,28 @@ peers:
 entityMatchers:
   peer:
     - pattern: (\w*)peer1-org1(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.142:17051
+      urlsubstitutionexp: grpcs://192.168.175.144:17051
       ssltargetoverrideurlsubstitutionexp: peer1-org1
       mappedhost: peer1-org1
 
     - pattern: (\w*)peer2-org1(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.142:18051
+      urlsubstitutionexp: grpcs://192.168.175.144:18051
       ssltargetoverrideurlsubstitutionexp: peer2-org1
       mappedhost: peer2-org1
 
     - pattern: (\w*)peer1-org2(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.142:19051
+      urlsubstitutionexp: grpcs://192.168.175.144:19051
       ssltargetoverrideurlsubstitutionexp: peer1-org2
       mappedhost: peer1-org2
 
     - pattern: (\w*)peer2-org2(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.142:10051
+      urlsubstitutionexp: grpcs://192.168.175.144:10051
       ssltargetoverrideurlsubstitutionexp: peer2-org2
       mappedhost: peer2-org2
 
   orderer:
     - pattern: (\w*)orderer1-org0(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.142:17050
+      urlsubstitutionexp: grpcs://192.168.175.144:17050
       ssltargetoverrideurlsubstitutionexp: orderer1-org0
       mappedhost: orderer1-org0
 

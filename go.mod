@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/hyperledger/fabric-sdk-go v1.0.0
-	github.com/iris-contrib/swagger/v12 v12.0.1
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/sirupsen/logrus v1.3.0
 )
@@ -46,6 +45,7 @@ require (
 	github.com/iris-contrib/jade v1.1.3 // indirect
 	github.com/iris-contrib/pongo2 v0.0.1 // indirect
 	github.com/iris-contrib/schema v0.0.1 // indirect
+	github.com/iris-contrib/swagger/v12 v12.0.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kataras/golog v0.0.10 // indirect
 	github.com/kataras/pio v0.0.2 // indirect

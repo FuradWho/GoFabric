@@ -30,9 +30,9 @@ func main() {
 	// common.CreateCC()
 	// common.QueryLedger()
 
-
-	controllers.StartIris()
 	services.NewFabricClient()
+	controllers.StartIris()
+
 
 
 }

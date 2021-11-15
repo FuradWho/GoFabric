@@ -110,7 +110,7 @@ func (f *FabricClient) CreateUser(userName string,secret string,userType string,
 	}
 
 	if caInfo.CAName != caName {
-		log.Error("Not match ca ")
+		log.Errorln("Not match ca ")
 		return "","",errors.New("Not match ca")
 	}
 	/*
@@ -131,7 +131,7 @@ func (f *FabricClient) CreateUser(userName string,secret string,userType string,
 	if err == nil {
 		log.Infof("user exists: %s\n", userName)
 		priFile, pubFile = f.GetKeyFile(id)
-		return
+		return priFile,pubFile,errors.New("user exists")
 	}
 
 	a1 := mspclient.Attribute{

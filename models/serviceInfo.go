@@ -14,6 +14,11 @@ type ResponseBean struct {
 	Data interface{} `json:"data"`
 }
 
+type UserData struct {
+	PriFile string `json:"pri_file"`
+	PubFile string `json:"pub_file"`
+}
+
 func SuccessData(data interface{}) *ResponseBean{
 	return &ResponseBean{
 		200,
@@ -37,4 +42,13 @@ func FailedMsg(errMsg string) *ResponseBean  {
 		"",
 	}
 }
+
+func FailedData(errMsg string,data interface{}) *ResponseBean  {
+	return &ResponseBean{
+		400,
+		errMsg,
+		data,
+	}
+}
+
 

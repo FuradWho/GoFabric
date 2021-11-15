@@ -2,24 +2,31 @@ package controllers
 
 
 import (
-	"github.com/iris-contrib/swagger/v12"
 	"github.com/kataras/iris/v12"
-
+	"github.com/kataras/iris/v12/context"
 	"gofabric/services"
 )
 
 
 func StartIris() {
-	App := iris.New()
-	App.Use(Cors)
-	// users API operate
-	usersApi := App.Party("/user")
+	app := iris.New()
+	app.Use(Cors)
+
+	testApi := app.Party("/")
 	{
-		usersApi.Use(iris.Compression)
+		testApi.Get("/test", func(context context.Context) {
+			context.JSON("connection success")
+		})
+	}
+
+	// users API operate
+	usersApi := app.Party("/user")
+	{
 		usersApi.Post("/CreateUser",services.CreateUser)
 	}
 
-	App.Listen(":9098")
+	 app.Listen(":9099")
+
 }
 
 

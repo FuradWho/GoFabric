@@ -34,21 +34,35 @@ func NewFabricClient()  {
 }
 
 
-func CreateUser(context *context.Context) interface{}  {
+func CreateUser(context context.Context) {
 
-	//path := context.Path()
-	//log.Infoln(path)
-	//
-	//var user models.User
-	//if err := context.ReadJSON(&user);err != nil{
-	//	log.Errorf("failed to read user info to json : %s \n",err)
-	//}
+	path := context.Path()
+	log.Infoln(path)
+
+	var user models.User
+	if err := context.ReadJSON(&user);err != nil{
+		log.Errorf("failed to read user info to json : %s \n",err)
+		context.JSON( models.FailedMsg("failed to create user"))
+		return
+	}
 
 	priFile , pubFile , err := fabricClient.CreateUser(user.UserName,user.Secret,user.UserType,user.OrgName,user.CaName)
 	if err != nil {
-		return models.FailedMsg("failed to create user")
+		if priFile != "" && pubFile != ""{
+			context.JSON(models.FailedData(err.Error(),models.UserData{
+				PriFile: priFile,
+				PubFile: pubFile,
+			}))
+		}else{
+			context.JSON( models.FailedMsg(err.Error()))
+		}
+		return
 	}
 
-	return models.SuccessData([]string{priFile,pubFile})
+	context.JSON(models.SuccessData(models.UserData{
+		PriFile: priFile,
+		PubFile: pubFile,
+	}))
+	return
 
 }
