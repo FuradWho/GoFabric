@@ -315,6 +315,20 @@ func (f *FabricClient) UpdateChannel(anchorsTx []string) error {
 
 func (f *FabricClient) JoinChannel(channelId , user, org string) error {
 
+	mspClient , err := mspclient.New(f.sdk.Context(),mspclient.WithOrg(org))
+	if err != nil {
+		log.Errorf("Failed to new mspClient : %s \n",err)
+		return err
+	}
+
+	adminidentity, err := mspClient.GetSigningIdentity(user)
+	if err != nil {
+		log.Errorf("Failed to get signIdentity : %s \n",err)
+		return  err
+	}
+
+	log.Infoln(string(adminidentity.PrivateKey().SKI()))
+
 	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
 	if err != nil {
 		log.Errorf("Failed to create channel management client : %s \n",err)

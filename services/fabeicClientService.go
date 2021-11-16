@@ -6,18 +6,14 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"github.com/sirupsen/logrus"
 	"gofabric/models"
+	"io"
 	"io/ioutil"
 	"os"
 )
 
 const (
 	channelId = "mychannel"
-	channelTx = "/usr/local/hyper/test2/configtx/channel-artifacts/channel2.tx"
 	connectConfigDir = "connect-config/channel-connection.yaml"
-	chaincodeId = "mycc_0"
-	chaincodePath = "newchaincode/test"
-	ccVersion = "0"
-
 )
 
 var fabricClient *models.FabricClient
@@ -43,7 +39,6 @@ func CreateUser(context context.Context) {
 	log.Infoln(path)
 
 	/*
-	//
 	var user models.User
 	if err := context.ReadJSON(&user);err != nil{
 		log.Errorf("failed to read user info to json : %s \n",err)
@@ -66,6 +61,7 @@ func CreateUser(context context.Context) {
 	priFile , pubFile , err := fabricClient.CreateUser(user.UserName,user.Secret,user.UserType,user.OrgName,user.CaName)
 	if err != nil {
 		if priFile != "" && pubFile != ""{
+
 			//context.JSON(models.FailedData(err.Error(),models.UserData{
 			//	PriFile: priFile,
 			//	PubFile: pubFile,
@@ -75,11 +71,12 @@ func CreateUser(context context.Context) {
 			pubFileDir := "/tmp/channel-store/"+pubFile
 			fileName := "/home/fabric/ideaProject/GoFabric/cafiles/"+user.UserName + ".zip"
 
-			err := ZipFiles(fileName, []string{priFileDir, pubFileDir})
+			err := zipFiles(fileName, []string{priFileDir, pubFileDir})
 			if err != nil {
 				return
 			}
 
+			context.Header("Content-Type","application/zip")
 			err = context.SendFile(fileName, "cafiles.zip")
 			if err != nil {
 				log.Errorln(err)
@@ -139,6 +136,10 @@ func JoinChannel(context context.Context)  {
 		Org: context.PostValueTrim("org"),
 	}
 
+	log.Infof("userName : %s \n",info.UserName)
+	log.Infof("org : %s \n ", info.Org)
+	log.Infof( "channelId : %s \n",info.ChannelId)
+
 	err := fabricClient.JoinChannel(info.ChannelId,info.UserName,info.Org)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to join channel"))
@@ -158,7 +159,7 @@ func CreateCC(context context.Context)  {
 
 }
 
-func ZipFiles(filename string , files []string) error  {
+func zipFiles(filename string , files []string) error  {
 	newZipFile, err := os.Create(filename)
 	if err != nil {
 		log.Errorln(err)
@@ -171,12 +172,40 @@ func ZipFiles(filename string , files []string) error  {
 	defer zipWriter.Close()
 
 	for _,file := range files{
-		zipFile, err := os.Open(file)
+		fileToZip, err := os.Open(file)
 		if err != nil {
 			log.Errorln(err)
 			return err
 		}
-		defer zipFile.Close()
+		defer fileToZip.Close()
+
+		info ,err := fileToZip.Stat()
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
+
+		header , err := zip.FileInfoHeader(info)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
+
+		header.Name = fileToZip.Name()
+		header.Method = zip.Deflate
+
+		w , err := zipWriter.CreateHeader(header)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
+
+		_, err = io.Copy(w, fileToZip)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
 	}
+
 	return nil
 }
