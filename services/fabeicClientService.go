@@ -13,7 +13,9 @@ import (
 
 const (
 	channelId = "mychannel"
-	connectConfigDir = "connect-config/channel-connection.yaml"
+	//connectConfigDir = "connect-config/channel-connection.yaml"
+	connectConfigDir = "connect-config/orgcpp-config.yaml"
+	chaincodePath = "newchaincode/test"
 )
 
 var fabricClient *models.FabricClient
@@ -136,9 +138,7 @@ func JoinChannel(context context.Context)  {
 		Org: context.PostValueTrim("org"),
 	}
 
-	log.Infof("userName : %s \n",info.UserName)
-	log.Infof("org : %s \n ", info.Org)
-	log.Infof( "channelId : %s \n",info.ChannelId)
+	log.Infof("join channel info : %+v \n",info)
 
 	err := fabricClient.JoinChannel(info.ChannelId,info.UserName,info.Org)
 	if err != nil {
@@ -155,7 +155,116 @@ func CreateCC(context context.Context)  {
 	path := context.Path()
 	log.Infoln(path)
 
+	/*
+		ChaincodeId string `json:"chaincode_id"`
+		ChaincodePath string `json:"chaincode_path"`
+		Version string `json:"version"`
+		Org string `json:"org"`
+		UserName string `json:"user_name"`
+		ChannelId string `json:"channel_id"`
+	 */
+	info := models.CcInfo{
+		ChannelId: context.PostValueTrim("channel_id"),
+		UserName: context.PostValueTrim("user_name"),
+		Org: context.PostValueTrim("org"),
+		Version: context.PostValueTrim("version"),
+		ChaincodeId : context.PostValueTrim("chaincode_id"),
+		ChaincodePath: chaincodePath,
+	}
+
+	log.Infof("create chaincode info : %+v \n",info)
+
 	// chaincodeId, chaincodePath, version, org , userName, channelId string
+	txId, err := fabricClient.CreateCC(info.ChaincodeId,info.ChaincodePath,info.Version,info.Org,info.UserName,info.ChannelId)
+	if err != nil {
+		context.JSON(models.FailedMsg("Failed to create chaincode"))
+		return
+	}
+
+	context.JSON(models.SuccessData(map[string]string{
+		"txId": txId,
+	}))
+
+}
+
+func LifeCycleChaincodeTest(ctx context.Context){
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	// chaincodeId, chaincodePath, org , user string
+
+	//txId, err := fabricClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org1","Admin")
+	//if err != nil {
+	//	return
+	//}
+	//log.Infoln(txId)
+	//
+	//tx2Id, err := fabricClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org2","Admin")
+	//if err != nil {
+	//	return
+	//}
+	//log.Infoln(tx2Id)
+
+	// Test0:5d6f5940712a57ee77265c718ec9f25c9683f286d7450338f3e47e1a46fcf52d
+
+	// Test0:5d6f5940712a57ee77265c718ec9f25c9683f286d7450338f3e47e1a46fcf52d
+	//  Test1:f9785b613f60c15c518fdab380e42c05938112b211fa632b75797f5fe4680855
+
+	//Test2:792f96243801760b2dfcbae9b5a505aedcde14a63e8f6dcea01125f6ec0ce4a0
+
+	// Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80
+
+	//err := fabricClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org1", "Test3", "0", "mychannel", "Admin","peer0.org1.example.com")
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = fabricClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org2", "Test3", "0", "mychannel", "Admin","peer0.org2.example.com")
+	//if err != nil {
+	//	return
+	//}
+	//
+	//err = fabricClient.QueryInstalled("Admin", "org1")
+	//if err != nil {
+	//	return
+	//}
+
+	//err = fabricClient.GetInstalledCCPackage("Admin", "Test0:5d6f5940712a57ee77265c718ec9f25c9683f286d7450338f3e47e1a46fcf52d", "org1")
+	//if err != nil {
+	//	return
+	//}
+	//
+
+	//time.Sleep(time.Duration(10)*time.Second)
+	//err :=  fabricClient.CheckCCCommitReadiness("Test3", "Admin", "org1", "mychannel","peer0.org1.example.com")
+	//if err != nil {
+	//	return
+	//}
+	//
+	//time.Sleep(time.Duration(5)*time.Second)
+	//
+	//err =  fabricClient.CheckCCCommitReadiness("Test3", "Admin", "org2", "mychannel","peer0.org2.example.com")
+	//if err != nil {
+	//	return
+	//}
+
+	//err := fabricClient.QueryApprovedCC("Test1", "Admin", "org1", "mychannel")
+	//if err != nil {
+	//	return
+	//}
+	//err = fabricClient.CommitCC("Test3", "Admin", "org2", "mychannel", "peer0.org2.example.com")
+	//if err != nil {
+	//	return
+	//}
+
+	//
+	//err = fabricClient.CommitCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
+	//if err != nil {
+	//	return
+	//}
+
+	fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 
 }
 

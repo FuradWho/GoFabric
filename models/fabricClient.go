@@ -23,12 +23,14 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"os"
 	"strings"
+
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
 const (
-	Admin = "User3"
-	peer1 = "peer1-org1"
-	peer2 = "peer2-org1"
+	Admin = "Admin"
+	peer1 = "peer0.org1.example.com"
+	peer2 = "peer0.org2.example.com"
 )
 
 var log = logrus.New()
@@ -56,7 +58,6 @@ func NewFabricClient(connectionFile []byte, channelId string, orgs []string) *Fa
 	}
 	return fabric
 }
-
 
 func (f *FabricClient) Setup() error {
 
@@ -107,7 +108,7 @@ func (f *FabricClient) CreateUser(userName string,secret string,userType string,
 
 	caInfo, err := mspClient.GetCAInfo()
 	if err != nil {
-		log.Errorf("Failed to get CA Info :%s \n",err)
+		log.Errorf("Failed to get CA Info :%s \n",err)	
 		return"","",err
 	}
 
@@ -199,8 +200,6 @@ func (f *FabricClient) CreateUser(userName string,secret string,userType string,
 
 	return priFile,pubFile,nil
 }
-
-
 
 func (f *FabricClient) GetKeyFile(id msp.SigningIdentity) (string,string){
 
@@ -367,19 +366,21 @@ func (f *FabricClient) CreateCC(chaincodeId, chaincodePath, version, org , userN
 		return "", err
 	}
 
-	_, err = resmgmtClient.InstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	_, err = resmgmtClient.InstallCC(installCCReq)
 	if err != nil {
 		log.Errorf("Failed to create chaincode :%s \n",err)
 		return "", err
 	}
 
-	ccPolicy := policydsl.SignedByAnyMember([]string{"org1MSP","org2MSP"})
+	ccPolicy := policydsl.SignedByAnyMember([]string{"org1MSP"})
 
+	initArgs := [][]byte{[]byte("init"),[]byte("a"), []byte("100"), []byte("b"), []byte("200")}
 	resp, err := resmgmtClient.InstantiateCC( channelId,
 		resmgmt.InstantiateCCRequest{
 			Name: chaincodeId,
 			Path: chaincodePath,
 			Version: version,
+			Args:    initArgs,
 			Policy: ccPolicy,
 		},
 		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
@@ -392,6 +393,229 @@ func (f *FabricClient) CreateCC(chaincodeId, chaincodePath, version, org , userN
 	log.Infoln(resp.TransactionID)
 	return string(resp.TransactionID), nil
 }
+
+func (f *FabricClient) GetInstalledCCPackage(user , packageID , org string) error {
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+	
+	resp , err := resmgmtClient.LifecycleGetInstalledCCPackage(packageID,resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to GetInstalledCCPackage chaincode : %s \n",err)
+		return err
+	}
+	log.Infoln(resp)
+	return nil
+}
+
+func (f *FabricClient) QueryInstalled(user, org string) error {
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+	
+	resp, err := resmgmtClient.LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to QueryInstalled chaincode : %s \n",err)
+		return err
+	}
+	log.Infoln(resp[2].PackageID)
+	log.Infoln(resp[2].Label)
+	
+	return nil
+}
+
+func (f *FabricClient) InstallCC(chaincodeId, chaincodePath, org , user string) (string , error) {
+
+	desc := &lcpackager.Descriptor{
+		Path: chaincodePath,
+		Type:  pb.ChaincodeSpec_GOLANG,
+		Label: chaincodeId,
+	}
+
+	ccPkg, err := lcpackager.NewCCPackage(desc)
+	if err != nil {
+		log.Errorf("Failed to NewCCPackage client : %s \n",err)
+		return "", err
+	}
+	
+	installCCReq := resmgmt.LifecycleInstallCCRequest{
+		Label:   chaincodeId,
+		Package: ccPkg,
+	}
+
+	packageID := lcpackager.ComputePackageID(installCCReq.Label, installCCReq.Package)
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return "", err
+	}
+
+	resp, err := resmgmtClient.LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to install chaincode : %s \n",err)
+		return "",err
+	}
+	fmt.Println(packageID)
+	fmt.Println(resp[0].PackageID)
+	return resp[0].PackageID, nil
+}
+
+func  (f *FabricClient) ApproveCC( packageID , org , chaincodeId , version , channelId ,user,peer string) error {
+
+	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP","Org2MSP"})
+
+	approveCCReq := resmgmt.LifecycleApproveCCRequest{
+		Name:              chaincodeId,
+		Version:           version,
+		PackageID:         packageID,
+		Sequence:          1,
+		EndorsementPlugin: "escc",
+		ValidationPlugin:  "vscc",
+		SignaturePolicy:   ccPolicy,
+		InitRequired:      true,
+	}
+
+	log.Infoln("!!!")
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+
+	txnID, err := resmgmtClient.LifecycleApproveCC(channelId, approveCCReq,resmgmt.WithOrdererEndpoint("orderer.example.com"),resmgmt.WithTargetEndpoints(peer))
+
+	log.Infoln("???")
+	if err != nil {
+		log.Errorf("Failed to ApproveCC chaincode : %s \n",err)
+		return err
+	}
+	log.Infoln(txnID)
+	return nil
+}
+
+func (f *FabricClient) QueryApprovedCC(ccID , user , org ,channelId,peer string ) error {
+	queryApprovedCCReq := resmgmt.LifecycleQueryApprovedCCRequest{
+		Name:     ccID,
+		Sequence: 1,
+	}
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+
+	resp, err := resmgmtClient.LifecycleQueryApprovedCC(channelId, queryApprovedCCReq, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to LifecycleQueryApprovedCC : %s \n",err)
+		return err
+	}
+	log.Infoln(resp.PackageID)
+	return nil
+}
+
+func (f *FabricClient) CheckCCCommitReadiness(ccID , user , org ,channelId ,peer string ) error {
+	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP","Org2MSP"})
+	req := resmgmt.LifecycleCheckCCCommitReadinessRequest{
+		Name:              ccID,
+		Version:           "0",
+		EndorsementPlugin: "escc",
+		ValidationPlugin:  "vscc",
+		SignaturePolicy:   ccPolicy,
+		Sequence:          1,
+		InitRequired:      true,
+	}
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+
+	resp, err := resmgmtClient.LifecycleCheckCCCommitReadiness(channelId, req, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to LifecycleCheckCCCommitReadiness : %s \n",err)
+		return err
+	}
+	log.Infof( "%+v \n",resp.Approvals)
+	return nil
+}
+
+
+
+func (f *FabricClient) CommitCC(ccID , user , org ,channelId ,peer string ) error {
+	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP","Org2MSP"})
+
+	req := resmgmt.LifecycleCommitCCRequest{
+		Name:              ccID,
+		Version:           "0",
+		Sequence:          1,
+		EndorsementPlugin: "escc",
+		ValidationPlugin:  "vscc",
+		SignaturePolicy:   ccPolicy,
+		InitRequired:      true,
+	}
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+
+	txnID, err := resmgmtClient.LifecycleCommitCC(channelId, req, resmgmt.WithOrdererEndpoint("orderer.example.com"))
+	if err != nil {
+		log.Errorf("Failed to LifecycleCommitCC : %s \n",err)
+		return err
+	}
+	log.Infof( "%+v \n",txnID)
+	return nil
+}
+
+
+func (f *FabricClient) QueryCommittedCC(ccID , user , org ,channelId ,peer string) error {
+	req := resmgmt.LifecycleQueryCommittedCCRequest{
+		Name: ccID,
+	}
+
+	resmgmtClient , err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user),fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n",err)
+		return err
+	}
+	resp, err := resmgmtClient.LifecycleQueryCommittedCC(channelId, req, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Errorf("Failed to LifecycleQueryCommittedCC : %s \n",err)
+		return err
+	}
+	log.Infoln(resp[0].Name)
+	return nil
+}
+
+//func (f *FabricClient)  InitCC(ccID , user , org ,channelId ,peer string) {
+//	//prepare channel client context using client context
+//	clientChannelContext := f.sdk.ChannelContext(channelId, fabsdk.WithUser(user), fabsdk.WithOrg(org))
+//	// Channel client is used to query and execute transactions (Org1 is default org)
+//	client, err := channel.New(clientChannelContext)
+//	if err != nil {
+//		t.Fatalf("Failed to create new channel client: %s", err)
+//	}
+//
+//	// init
+//	_, err = client.Execute(channel.Request{ChaincodeID: ccID, Fcn: "init", Args: integration.ExampleCCInitArgsLc(), IsInit: true},
+//		channel.WithRetry(retry.DefaultChannelOpts))
+//	if err != nil {
+//		t.Fatalf("Failed to init: %s", err)
+//	}
+//}
+
 
 func (f *FabricClient) InstallChaincode(chaincodeId, chaincodePath, version string) error {
 	//ccPkg, err := gopackager.NewCCPackage(chaincodePath, f.GoPath)
@@ -480,116 +704,6 @@ func (f *FabricClient) GetOrgTargetPeers(org string) ([]string, error) {
 
 	return peers, nil
 }
-
-//func (f *FabricClient) PackageCC() (string, []byte) {
-//	desc := &lcpackager.Descriptor{
-//		Path:  "/usr/local/soft/fabric-test5/chaincode/newchaincode/test",
-//		Type:  pb.ChaincodeSpec_GOLANG,
-//		Label: "newcc0",
-//	}
-//	ccPkg, err := lcpackager.NewCCPackage(desc)
-//	if err != nil {
-//		log.Errorf()("Failed to package chaincode : %s \n",err)
-//	}
-//	return desc.Label, ccPkg
-//}
-
-
-func (f *FabricClient) InstallCC(label string, ccPkg []byte , org string) {
-	installCCReq := resmgmt.LifecycleInstallCCRequest{
-		Label:   label,
-		Package: ccPkg,
-	}
-
-	packageID := lcpackager.ComputePackageID(installCCReq.Label, installCCReq.Package)
-
-	resp, err := f.resmgmtClients[org].LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
-	if err != nil {
-		log.Errorf("Failed to install chaincode : %s \n",err)
-	}
-	fmt.Println(packageID)
-	fmt.Println(resp[0].PackageID)
-}
-
-func (f *FabricClient) GetInstalledCCPackage(packageID string , org string) {
-	_, err := f.resmgmtClients[org].LifecycleGetInstalledCCPackage(packageID,resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
-	if err != nil {
-		log.Errorf("Failed to GetInstalledCCPackage chaincode : %s \n",err)
-	}
-	//fmt.Println(resp)
-}
-
-func (f *FabricClient) QueryInstalled(label string, packageID string , org string) {
-	resp, err := f.resmgmtClients[org].LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer2), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
-	if err != nil {
-		log.Errorf("Failed to QueryInstalled chaincode : %s \n",err)
-	}
-	fmt.Println(resp[0].PackageID)
-	fmt.Println(resp[0].Label)
-}
-
-func  (f *FabricClient) ApproveCC( packageID string , org string) {
-	//queryApprovedCCReq := resmgmt.LifecycleQueryApprovedCCRequest{
-	//	Name:       "newcc0",
-	//	Sequence: 1,
-	//}
-	//resp, err := f.resmgmtClients[0].LifecycleQueryApprovedCC("mychannel", queryApprovedCCReq, resmgmt.WithTargetEndpoints(peer1), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(resp.PackageID)
-	//
-	//
-	ccPolicy := policydsl.SignedByAnyMember([]string{"org1MSP"})
-
-	approveCCReq := resmgmt.LifecycleApproveCCRequest{
-		Name:              "newcc0",
-		Version:           "0",
-		PackageID:         packageID,
-		Sequence:          1,
-		EndorsementPlugin: "escc",
-		ValidationPlugin:  "vscc",
-		SignaturePolicy:   ccPolicy,
-		InitRequired:      true,
-	}
-	fmt.Println("!!!")
-
-	txnID, err := f.resmgmtClients[org].LifecycleApproveCC("mychannel", approveCCReq, resmgmt.WithTargetEndpoints(peer1), resmgmt.WithOrdererEndpoint("orderer1-org0"))
-	fmt.Println("???")
-	if err != nil {
-		log.Errorf("Failed to ApproveCC chaincode : %s \n",err)
-	}
-
-	fmt.Println(txnID)
-
-}
-
-
-
-//func (f *FabricClient) InstantiateChaincode(chaincodeId, chaincodePath, version string, policy string, args [][]byte) (string, error) {
-//
-//	//"OR ('Org1MSP.member','Org2MSP.member')"
-//	ccPolicy, err := cauthdsl.FromString(policy)
-//	if err != nil {
-//		return "", err
-//	}
-//	resp, err := f.resmgmtClients[0].InstantiateCC(
-//		f.ChannelId,
-//		resmgmt.InstantiateCCRequest{
-//			Name:    chaincodeId,
-//			Path:    chaincodePath,
-//			Version: version,
-//			Args:    args,
-//			Policy:  ccPolicy,
-//		},
-//		f.retry,
-//	)
-//
-//	return string(resp.TransactionID), nil
-//}
-
-
-
 
 func (f *FabricClient) QueryLedger() error {
 

@@ -9,9 +9,9 @@ type User struct {
 }
 
 type ResponseBean struct {
-	Code int `json:"code"`
-	Msg string `json:"msg"`
-	Data interface{} `json:"data"`
+	Code int `json:"code,omitempty"`
+	Msg string `json:"msg,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type UserData struct {
@@ -21,20 +21,20 @@ type UserData struct {
 
 type CreateChannelInfo struct {
 
-	Org string `json:"org"`
-	UserName string `json:"user_name"`
-	ChannelId string `json:"channel_id"`
+	Org string `json:"org,omitempty"`
+	UserName string `json:"user_name,omitempty"`
+	ChannelId string `json:"channel_id,omitempty"`
 
 }
 
 type CcInfo struct {
 
-	ChaincodeId string
-	ChaincodePath string
-	Version string
-	Org string
-	UserName string
-	ChannelId string
+	ChaincodeId string `json:"chaincode_id"`
+	ChaincodePath string `json:"chaincode_path"`
+	Version string `json:"version"`
+	Org string `json:"org"`
+	UserName string `json:"user_name"`
+	ChannelId string `json:"channel_id"`
 
 }
 

@@ -1,0 +1,163 @@
+version: 1.0.0
+#定义 SDK 客户端
+client:
+  # 客户端所属组织，必须是organization定义的组织
+  organization: Org1
+  logging:
+  # 打印日志等级
+    level: info
+  # MSP根目录 链接byfn网络时，指定为网络启动后生成的crypto-config文件夹
+  cryptoconfig:
+    path: /usr/local/hyper/test5/crypto-config
+  # 某些SDK支持插件化的KV数据库，通过该属性实现
+  credentialStore:
+    # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
+    path: "/tmp/examplestore"
+  # 客户端的BCCSP模块配置
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+  tlsCerts:
+    # 可选，当连接到peers，orderers时使用系统证书池，默认为false
+    systemCertPool: true
+    #  可选，客户端和peers与orderers进行TLS握手的密钥和证书
+    client:
+      # 使用byfn中User1@org1的证书
+      keyfile: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
+      certfile: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.cert
+
+# 如果应用程序已经创建了通道，则不需要这部分
+channels:
+  # 通道名称
+  mychannel:
+    # 不要缺少当前channel的orderer节点
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com:
+        #参与背书
+        endorsingPeer: true
+        # 调用链码查询
+        chaincodeQuery: true
+        # 查询账本
+        ledgerQuery: true
+        # 监听事件
+        eventSource: true
+
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+    # 可选，应用程序使用下列选项执行通道操作，如获取通道配置
+    policies:
+      # 可选，获取通道配置
+      queryChannelConfig:
+        #成功响应节点的最小数量
+        minResponses: 1
+        maxTargets: 1
+        # 查询配置区块的重试选项
+        retryOpts:
+          # 重试次数
+          attempts: 5
+          initialBackoff: 500ms
+          #第一次重试的后退间隔
+          maxBackoff: 5s
+          backoffFactor: 2.0
+
+# Fabric区块链网络中参与的组织列表
+organizations:
+ # 组织名
+  Org1:
+    mspid: Org1MSP
+    # 组织的MSP存储位置，绝对路径或相对cryptoconfig的路径
+    cryptoPath: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+
+    # 组织中的节点
+    peers:
+      - peer0.org1.example.com
+
+  Org2:
+    mspid: Org2MSP
+    cryptoPath: /usr/local/hyper/test5/crypto-config/peerOrganizations/org2.example.com/users/{username}@org2.example.com/msp
+
+    peers:
+      - peer0.org2.example.com
+
+  Ordererorg:
+    mspID: OrdererMSP
+    cryptoPath: /usr/local/hyper/test5/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp
+
+# 发送交易请求或通道创建、更新请求到的orderers列表
+# 如果定义了超过一个orderer，SDK使用哪一个orderer由代码实现时指定
+orderers:
+  orderer.example.com:
+    url: grpcs://192.168.175.133:7050
+
+    # 以下属性由gRPC库定义，会被传递给gRPC客户端构造函数
+    grpcOptions:
+      # 下列参数用于设置服务器上的keepalive策略，不兼容的设置会导致连接关闭
+      # 当keep-alive-time被设置为0或小于激活客户端的参数，下列参数失效
+      ssl-target-name-override: orderer.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+
+    tlsCACerts:
+      #证书的绝对路径
+      path: /usr/local/hyper/test5/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+#peers必须指定Hyperledger Fabric区块链网络中所有peer节点的主机名和端口，可能会在其它地方引用，如channels，organizations等部分。
+peers:
+  peer0.org1.example.com:
+    # 表明使用grpcs协议，设置IP和端口号，使用域名会无法连接
+    # url: grpcs://peer0.org1.example.com:7051
+    url: grpcs://192.168.175.143:7051
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+  peer0.org2.example.com:
+    url: grpcs://192.168.175.143:9051
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+
+entitymatchers:
+  peer:
+    - pattern: (\w*)peer0.org1.example.com(\w*)
+      urlsubstitutionexp: grpcs://192.168.175.143:7051
+      ssltargetoverrideurlsubstitutionexp: peer0.org1.example.com
+      mappedhost: peer0.org1.example.com
+
+    - pattern: (\w*)peer0.org2.example.com(\w*)
+      urlsubstitutionexp: grpcs://192.168.175.143:9051
+      ssltargetoverrideurlsubstitutionexp: peer0.org2.example.com
+      mappedhost: peer0.org2.example.com
+
+  orderer:
+    - pattern: (\w*)orderer.example.com(\w*)
+      urlsubstitutionexp: 192.168.175.143:7050
+      ssltargetoverrideurlsubstitutionexp: orderer.example.com
+      mappedhost: orderer.example.com

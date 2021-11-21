@@ -17,6 +17,8 @@ func StartIris() {
 		testApi.Get("/test", func(context context.Context) {
 			context.JSON("connection success")
 		})
+
+		testApi.Get("/LifeCycleChaincodeTest",services.LifeCycleChaincodeTest)
 	}
 
 	// users API operate
