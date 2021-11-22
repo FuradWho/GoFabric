@@ -3,6 +3,8 @@ package services
 import (
 	"archive/zip"
 	"fmt"
+	"github.com/go-playground/validator/v10"
+	_ "github.com/go-playground/validator/v10"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/kataras/iris/v12/context"
@@ -25,6 +27,7 @@ const (
 var fabricClient *models.FabricClient
 var log = logrus.New()
 var orgs = []string{"org1", "org2"}
+var validate = validator.New()
 
 func NewFabricClient() {
 
@@ -157,14 +160,6 @@ func CreateCC(context context.Context) {
 	path := context.Path()
 	log.Infoln(path)
 
-	/*
-		ChaincodeId string `json:"chaincode_id"`
-		ChaincodePath string `json:"chaincode_path"`
-		Version string `json:"version"`
-		Org string `json:"org"`
-		UserName string `json:"user_name"`
-		ChannelId string `json:"channel_id"`
-	*/
 	info := models.CcInfo{
 		ChannelId:     context.PostValueTrim("channel_id"),
 		UserName:      context.PostValueTrim("user_name"),
@@ -173,7 +168,6 @@ func CreateCC(context context.Context) {
 		ChaincodeId:   context.PostValueTrim("chaincode_id"),
 		ChaincodePath: chaincodePath,
 	}
-
 	log.Infof("create chaincode info : %+v \n", info)
 
 	// chaincodeId, chaincodePath, version, org , userName, channelId string
@@ -194,12 +188,19 @@ func InstallCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.InstallCCInfo{
 		UserName:      ctx.PostValueTrim("user_name"),
 		Org:           ctx.PostValueTrim("org"),
 		ChaincodeId:   ctx.PostValueTrim("chaincode_id"),
 		ChaincodePath: chaincodePath,
 		Peer:          ctx.PostValueTrim("peer"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("InstallCC info : %+v \n", info)
@@ -240,10 +241,17 @@ func QueryInstalled(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.QueryInstalledInfo{
 		UserName: ctx.PostValueTrim("user_name"),
 		Org:      ctx.PostValueTrim("org"),
 		Peer:     ctx.PostValueTrim("peer"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("QueryInstalled info : %+v \n", info)
@@ -264,7 +272,7 @@ func ApproveCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.ApproveCCInfo{
 		PackageId:   ctx.PostValueTrim("package_id"),
 		UserName:    ctx.PostValueTrim("user_name"),
 		Org:         ctx.PostValueTrim("org"),
@@ -276,10 +284,18 @@ func ApproveCC(ctx context.Context) {
 		Sequence:    ctx.PostValueTrim("sequence"),
 	}
 
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
+	}
+
 	log.Infof("ApproveCC info : %+v \n", info)
 
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
+		log.Errorln(err)
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
 	}
@@ -314,13 +330,20 @@ func QueryApprovedCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.QueryApprovedCCInfo{
 		UserName:    ctx.PostValueTrim("user_name"),
 		Org:         ctx.PostValueTrim("org"),
 		Peer:        ctx.PostValueTrim("peer"),
 		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
 		ChannelId:   ctx.PostValueTrim("channel_id"),
 		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("QueryApprovedCC info : %+v \n", info)
@@ -363,7 +386,7 @@ func CheckCCCommitReadiness(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.CheckCCCommitReadinessInfo{
 		UserName:    ctx.PostValueTrim("user_name"),
 		Org:         ctx.PostValueTrim("org"),
 		Peer:        ctx.PostValueTrim("peer"),
@@ -371,6 +394,13 @@ func CheckCCCommitReadiness(ctx context.Context) {
 		ChannelId:   ctx.PostValueTrim("channel_id"),
 		Sequence:    ctx.PostValueTrim("sequence"),
 		Version:     ctx.PostValueTrim("version"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("CheckCCCommitReadiness info : %+v \n", info)
@@ -412,12 +442,19 @@ func RequestInstallCCByOther(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.RequestInstallCCByOtherInfo{
 		UserName:      Admin,
 		Org:           ctx.PostValueTrim("org"),
 		ChaincodeId:   ctx.PostValueTrim("chaincode_id"),
 		ChaincodePath: chaincodePath,
 		Peer:          ctx.PostValueTrim("peer"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("RequestInstallCCByOther info : %+v \n", info)
@@ -458,7 +495,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.RequestApproveCCByOtherInfo{
 		PackageId:   ctx.PostValueTrim("package_id"),
 		UserName:    Admin,
 		Org:         ctx.PostValueTrim("org"),
@@ -468,6 +505,13 @@ func RequestApproveCCByOther(ctx context.Context) {
 		ChannelId:   ctx.PostValueTrim("channel_id"),
 		Orderer:     ctx.PostValueTrim("orderer"),
 		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("RequestApproveCCByOther info : %+v \n", info)
@@ -508,7 +552,7 @@ func CommitCC(ctx context.Context){
 	path := ctx.Path()
 	log.Infoln(path)
 
-	info := models.CcInfo{
+	info := models.CommitCCInfo{
 		UserName:    ctx.PostValueTrim("user_name"),
 		Org:         ctx.PostValueTrim("org"),
 		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
@@ -517,6 +561,13 @@ func CommitCC(ctx context.Context){
 		ChannelId:   ctx.PostValueTrim("channel_id"),
 		Orderer:     ctx.PostValueTrim("orderer"),
 		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		ctx.JSON(models.FailedData("Field does not match",err))
+		return
 	}
 
 	log.Infof("RequestApproveCCByOther info : %+v \n", info)
@@ -551,7 +602,6 @@ func CommitCC(ctx context.Context){
 		"txId": string(txId),
 	}))
 }
-
 
 func GetOrgTargetPeers(ctx context.Context) {
 
