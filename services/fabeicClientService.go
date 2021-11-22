@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"sync"
 )
 
 const (
@@ -28,6 +29,8 @@ var fabricClient *models.FabricClient
 var log = logrus.New()
 var orgs = []string{"org1", "org2"}
 var validate = validator.New()
+
+
 
 func NewFabricClient() {
 
@@ -185,6 +188,7 @@ func CreateCC(context context.Context) {
 
 func InstallCC(ctx context.Context) {
 
+
 	path := ctx.Path()
 	log.Infoln(path)
 
@@ -223,12 +227,17 @@ func InstallCC(ctx context.Context) {
 		ctx.JSON(models.FailedMsg("The chaincode has installed "))
 		return
 	}
+	var lck sync.Mutex
+	lck.Lock()
 
 	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to Install chaincode"))
 		return
 	}
+
+	defer lck.Unlock()
+
 	log.Infof("txId : %s \n", txId)
 	ctx.JSON(models.SuccessData(map[string]string{
 		"txId": txId,
@@ -313,12 +322,15 @@ func ApproveCC(ctx context.Context) {
 		return
 	}
 	sequence, _ := strconv.Atoi(info.Sequence)
+	var lck sync.Mutex
+	lck.Lock()
 
 	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to approve the chaincode "))
 		return
 	}
+	lck.Unlock()
 
 	ctx.JSON(models.SuccessData(map[string]fab.TransactionID{
 		"txnID": txnID,
@@ -428,11 +440,15 @@ func CheckCCCommitReadiness(ctx context.Context) {
 
 	// func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelId, peer string, sequence int) (map[string]bool, error) {
 
+	var lck sync.Mutex
+	lck.Lock()
+
 	readiness, err := fabricClient.CheckCCCommitReadiness(info.ChaincodeId, info.Version, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to CheckCCCommitReadiness the chaincode "))
 		return
 	}
+	lck.Unlock()
 
 	ctx.JSON(models.SuccessData(readiness))
 }
@@ -478,12 +494,16 @@ func RequestInstallCCByOther(ctx context.Context) {
 		return
 	}
 
+	var lck sync.Mutex
+	lck.Lock()
+
 	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to RequestInstallCCByOther "))
 		return
 	}
 	log.Infof("txId : %s \n", txId)
+	lck.Unlock()
 	ctx.JSON(models.SuccessData(map[string]string{
 		"txId": txId,
 	}))
@@ -535,12 +555,14 @@ func RequestApproveCCByOther(ctx context.Context) {
 		return
 	}
 	sequence, _ := strconv.Atoi(info.Sequence)
-
+	var lck sync.Mutex
+	lck.Lock()
 	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to RequestApproveCCByOther the chaincode "))
 		return
 	}
+	lck.Unlock()
 
 	ctx.JSON(models.SuccessData(map[string]fab.TransactionID{
 		"txnID": txnID,
@@ -593,11 +615,17 @@ func CommitCC(ctx context.Context){
 
 	sequence, _ := strconv.Atoi(info.Sequence)
 
+	var lck sync.Mutex
+	lck.Lock()
+
 	txId , err := fabricClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId,info.Orderer,info.Version,sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to CommitCC "))
 		return
 	}
+
+	lck.Unlock()
+
 	ctx.JSON(models.SuccessData(map[string]string{
 		"txId": string(txId),
 	}))
