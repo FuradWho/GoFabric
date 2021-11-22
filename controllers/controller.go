@@ -29,6 +29,9 @@ func StartIris() {
 	{
 		channelApi.Post("/CreateChannel", services.CreateChannel)
 		channelApi.Post("/JoinChannel", services.JoinChannel)
+		channelApi.Get("/GetOrgTargetPeers",services.GetOrgTargetPeers)
+		channelApi.Get("/GetNetworkConfig",services.GetNetworkConfig)
+
 	}
 
 	ccApi := app.Party("/cc")

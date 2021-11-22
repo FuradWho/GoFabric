@@ -696,6 +696,38 @@ func (f *FabricClient) GetOrgTargetPeers(org string) ([]string, error) {
 	return peers, nil
 }
 
+func (f *FabricClient) GetNetworkConfig() (fab.NetworkConfig, error) {
+
+	configBackend, _ := f.sdk.Config()
+	networkConfig := fab.NetworkConfig{}
+
+	err := lookup.New(configBackend).UnmarshalKey("organizations", &networkConfig.Organizations)
+	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n", err)
+		return  networkConfig, err
+	}
+
+	err = lookup.New(configBackend).UnmarshalKey("orderers", &networkConfig.Orderers)
+	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n", err)
+		return  networkConfig, err
+	}
+
+	err = lookup.New(configBackend).UnmarshalKey("channels", &networkConfig.Channels)
+	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n", err)
+		return  networkConfig, err
+	}
+
+	err = lookup.New(configBackend).UnmarshalKey("peers", &networkConfig.Peers)
+	if err != nil {
+		log.Errorf("Failed to unmarsha org :%s \n", err)
+		return  networkConfig, err
+	}
+
+	return networkConfig, nil
+}
+
 func (f *FabricClient) QueryLedger() error {
 
 	ledger, err := ledger.New(f.sdk.ChannelContext(f.ChannelId, fabsdk.WithUser("User3"), fabsdk.WithOrg("org1")))

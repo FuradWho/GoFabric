@@ -30,7 +30,6 @@ func NewFabricClient() {
 	connectConfig, _ := ioutil.ReadFile(connectConfigDir)
 	fabricClient = models.NewFabricClient(connectConfig, channelId, orgs)
 	//defer fabricClient.Close()
-
 	err := fabricClient.Setup()
 	if err != nil {
 		return
@@ -202,8 +201,7 @@ func InstallCC(ctx context.Context) {
 		Peer:          ctx.PostValueTrim("peer"),
 	}
 
-	log.Infof("InstallCC info : %+v \n",info)
-
+	log.Infof("InstallCC info : %+v \n", info)
 
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
@@ -247,7 +245,7 @@ func QueryInstalled(ctx context.Context) {
 		Peer:     ctx.PostValueTrim("peer"),
 	}
 
-	log.Infof("QueryInstalled info : %+v \n",info)
+	log.Infof("QueryInstalled info : %+v \n", info)
 
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
@@ -277,7 +275,7 @@ func ApproveCC(ctx context.Context) {
 		Sequence:    ctx.PostValueTrim("sequence"),
 	}
 
-	log.Infof("ApproveCC info : %+v \n",info)
+	log.Infof("ApproveCC info : %+v \n", info)
 
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
@@ -324,7 +322,7 @@ func QueryApprovedCC(ctx context.Context) {
 		Sequence:    ctx.PostValueTrim("sequence"),
 	}
 
-	log.Infof("QueryApprovedCC info : %+v \n",info)
+	log.Infof("QueryApprovedCC info : %+v \n", info)
 
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
@@ -359,7 +357,7 @@ func QueryApprovedCC(ctx context.Context) {
 
 }
 
-func CheckCCCommitReadiness(ctx context.Context)  {
+func CheckCCCommitReadiness(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -374,7 +372,7 @@ func CheckCCCommitReadiness(ctx context.Context)  {
 		Version:     ctx.PostValueTrim("version"),
 	}
 
-	log.Infof("CheckCCCommitReadiness info : %+v \n",info)
+	log.Infof("CheckCCCommitReadiness info : %+v \n", info)
 
 	sequence, _ := strconv.Atoi(info.Sequence)
 
@@ -408,7 +406,43 @@ func CheckCCCommitReadiness(ctx context.Context)  {
 	ctx.JSON(models.SuccessData(readiness))
 }
 
+func GetOrgTargetPeers(ctx context.Context) {
 
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		Org: ctx.URLParam("org"),
+	}
+
+	log.Infof("GetOrgTargetPeers info : %+v \n", info)
+
+	peers, err := fabricClient.GetOrgTargetPeers(info.Org)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to GetOrgTargetPeers"))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(map[string][]string{
+		"peers": peers,
+	}))
+
+}
+
+func GetNetworkConfig(ctx context.Context) {
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	config, err := fabricClient.GetNetworkConfig()
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to GetOrgTargetPeers"))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(config))
+
+}
 
 func LifeCycleChaincodeTest(ctx context.Context) {
 
