@@ -7,32 +7,30 @@ import (
 )
 
 const (
-	channelId = "mychannel"
-	channelTx = "/usr/local/hyper/test2/configtx/channel-artifacts/mychannel.tx"
+	channelId        = "mychannel"
+	channelTx        = "/usr/local/hyper/test2/configtx/channel-artifacts/mychannel.tx"
 	connectConfigDir = "connect-config/channel-connection.yaml"
-	chaincodeId = "mycc_0"
-	chaincodePath = "newchaincode/test"
-	ccVersion = "0"
-
+	chaincodeId      = "mycc_0"
+	chaincodePath    = "newchaincode/test"
+	ccVersion        = "0"
 )
 
 var fabricClient *models.FabricClient
 var log = logrus.New()
-var orgs = []string{"org1","org2"}
+var orgs = []string{"org1", "org2"}
 
-func NewFabricClient()  {
-	
+func NewFabricClient() {
+
 	connectConfig, _ := ioutil.ReadFile(connectConfigDir)
 
-	fabricClient =  models.NewFabricClient(connectConfig,channelId,orgs)
+	fabricClient = models.NewFabricClient(connectConfig, channelId, orgs)
 	//defer fabricClient.Close()
 
 	err := fabricClient.Setup()
 	if err != nil {
-		log.Errorf("Failed to New Fabric Client: %s \n",err)
+		log.Errorf("Failed to New Fabric Client: %s \n", err)
 	}
 }
-
 
 //func CreateChannel()  {
 //	err := fabricClient.CreateChannel(channelTx)
@@ -45,12 +43,11 @@ func NewFabricClient()  {
 //	}
 //}
 
+func InstallChaincode() {
 
-func InstallChaincode()  {
-
-	err := fabricClient.InstallChaincode(chaincodeId,chaincodePath,ccVersion)
+	err := fabricClient.InstallChaincode(chaincodeId, chaincodePath, ccVersion)
 	if err != nil {
-		log.Panicf("Failed to InstallChaincode: %s \n",err)
+		log.Panicf("Failed to InstallChaincode: %s \n", err)
 	}
 
 }
@@ -79,10 +76,9 @@ func InstallChaincode()  {
 //	fabricClient.CreateCC(chaincodeId,chaincodePath,ccVersion)
 //}
 
-func QueryLedger(){
+func QueryLedger() {
 	fabricClient.QueryLedger()
 }
-
 
 /*
 	// ordererDomain  := "orderer.example.com"
@@ -102,7 +98,6 @@ func QueryLedger(){
 	//fabric.JoinChannel()
 */
 
-
 //sdkClient , err := fabsdk.New(config.FromFile("connect-config/channel-connection.yaml"))
 //if err != nil {
 //	log.Panicf("Failed to create a sdkClient :%s \n",err)
@@ -114,7 +109,6 @@ func QueryLedger(){
 //if err != nil {
 //	log.Panicf("Failed to create a resourceClient : %s \n",err)
 //}
-
 
 //mspClient , err := mspclient.New(sdkClient.Context(),mspclient.WithOrg("org1"))
 //if err != nil {
@@ -147,10 +141,7 @@ func QueryLedger(){
 //	log.Printf("Org peers failed to JoinChannel: %s \n", err)
 //}
 
-
-
 //p, err := peer.New()
 //if err != nil {
 //	return
 //}
-

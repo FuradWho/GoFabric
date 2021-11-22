@@ -4,7 +4,7 @@ client:
   # 客户端所属组织，必须是organization定义的组织
   organization: Org1
   logging:
-  # 打印日志等级
+    # 打印日志等级
     level: info
   # MSP根目录 链接byfn网络时，指定为网络启动后生成的crypto-config文件夹
   cryptoconfig:
@@ -74,7 +74,7 @@ channels:
 
 # Fabric区块链网络中参与的组织列表
 organizations:
- # 组织名
+  # 组织名
   Org1:
     mspid: Org1MSP
     # 组织的MSP存储位置，绝对路径或相对cryptoconfig的路径

@@ -1,12 +1,10 @@
 package controllers
 
-
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"gofabric/services"
 )
-
 
 func StartIris() {
 	app := iris.New()
@@ -18,31 +16,32 @@ func StartIris() {
 			context.JSON("connection success")
 		})
 
-		testApi.Get("/LifeCycleChaincodeTest",services.LifeCycleChaincodeTest)
+		testApi.Get("/LifeCycleChaincodeTest", services.LifeCycleChaincodeTest)
 	}
 
 	// users API operate
 	usersApi := app.Party("/user")
 	{
-		usersApi.Post("/CreateUser",services.CreateUser)
+		usersApi.Post("/CreateUser", services.CreateUser)
 	}
 
 	channelApi := app.Party("/channel")
 	{
-		channelApi.Post("/CreateChannel",services.CreateChannel)
-		channelApi.Post("/JoinChannel",services.JoinChannel)
+		channelApi.Post("/CreateChannel", services.CreateChannel)
+		channelApi.Post("/JoinChannel", services.JoinChannel)
 	}
 
 	ccApi := app.Party("/cc")
 	{
-		ccApi.Post("/CreateCC",services.CreateCC)
+		ccApi.Post("/CreateCC", services.CreateCC)
+		ccApi.Post("/InstallCC", services.InstallCC)
+		ccApi.Post("/QueryInstalled", services.QueryInstalled)
+
 	}
 
-	 app.Listen(":9099")
+	app.Listen(":9099")
 
 }
-
-
 
 // Cors Resolve the CORS
 func Cors(ctx iris.Context) {
@@ -56,4 +55,3 @@ func Cors(ctx iris.Context) {
 	}
 	ctx.Next()
 }
-

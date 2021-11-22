@@ -2,15 +2,15 @@ package models
 
 type User struct {
 	UserName string `json:"user_name,omitempty"`
-	Secret string `json:"secret,omitempty"`
+	Secret   string `json:"secret,omitempty"`
 	UserType string `json:"user_type,omitempty"`
-	OrgName string `json:"org_name,omitempty"`
-	CaName string `json:"ca_name,omitempty"`
+	OrgName  string `json:"org_name,omitempty"`
+	CaName   string `json:"ca_name,omitempty"`
 }
 
 type ResponseBean struct {
-	Code int `json:"code,omitempty"`
-	Msg string `json:"msg,omitempty"`
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
 	Data interface{} `json:"data,omitempty"`
 }
 
@@ -20,26 +20,23 @@ type UserData struct {
 }
 
 type CreateChannelInfo struct {
-
-	Org string `json:"org,omitempty"`
-	UserName string `json:"user_name,omitempty"`
+	Org       string `json:"org,omitempty"`
+	UserName  string `json:"user_name,omitempty"`
 	ChannelId string `json:"channel_id,omitempty"`
-
 }
 
 type CcInfo struct {
-
-	ChaincodeId string `json:"chaincode_id"`
+	PackageId     string `json:"package_id"`
+	ChaincodeId   string `json:"chaincode_id"`
 	ChaincodePath string `json:"chaincode_path"`
-	Version string `json:"version"`
-	Org string `json:"org"`
-	UserName string `json:"user_name"`
-	ChannelId string `json:"channel_id"`
-
+	Version       string `json:"version"`
+	Org           string `json:"org"`
+	UserName      string `json:"user_name"`
+	ChannelId     string `json:"channel_id"`
+	Peer          string `json:"peer"`
 }
 
-
-func SuccessData(data interface{}) *ResponseBean{
+func SuccessData(data interface{}) *ResponseBean {
 	return &ResponseBean{
 		200,
 		"success",
@@ -47,7 +44,7 @@ func SuccessData(data interface{}) *ResponseBean{
 	}
 }
 
-func SuccessMsg(msg string) *ResponseBean  {
+func SuccessMsg(msg string) *ResponseBean {
 	return &ResponseBean{
 		200,
 		msg,
@@ -55,7 +52,7 @@ func SuccessMsg(msg string) *ResponseBean  {
 	}
 }
 
-func FailedMsg(errMsg string) *ResponseBean  {
+func FailedMsg(errMsg string) *ResponseBean {
 	return &ResponseBean{
 		400,
 		errMsg,
@@ -63,12 +60,10 @@ func FailedMsg(errMsg string) *ResponseBean  {
 	}
 }
 
-func FailedData(errMsg string,data interface{}) *ResponseBean  {
+func FailedData(errMsg string, data interface{}) *ResponseBean {
 	return &ResponseBean{
 		400,
 		errMsg,
 		data,
 	}
 }
-
-
