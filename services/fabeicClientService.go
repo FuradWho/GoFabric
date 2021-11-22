@@ -4,12 +4,14 @@ import (
 	"archive/zip"
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/kataras/iris/v12/context"
 	"github.com/sirupsen/logrus"
 	"gofabric/models"
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 )
 
 const (
@@ -200,6 +202,9 @@ func InstallCC(ctx context.Context) {
 		Peer:          ctx.PostValueTrim("peer"),
 	}
 
+	log.Infof("InstallCC info : %+v \n",info)
+
+
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
@@ -242,6 +247,8 @@ func QueryInstalled(ctx context.Context) {
 		Peer:     ctx.PostValueTrim("peer"),
 	}
 
+	log.Infof("QueryInstalled info : %+v \n",info)
+
 	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
@@ -259,12 +266,149 @@ func ApproveCC(ctx context.Context) {
 	log.Infoln(path)
 
 	info := models.CcInfo{
-		UserName: ctx.PostValueTrim("user_name"),
-		Org:      ctx.PostValueTrim("org"),
-		Peer:     ctx.PostValueTrim("peer"),
+		PackageId:   ctx.PostValueTrim("package_id"),
+		UserName:    ctx.PostValueTrim("user_name"),
+		Org:         ctx.PostValueTrim("org"),
+		Peer:        ctx.PostValueTrim("peer"),
+		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
+		Version:     ctx.PostValueTrim("version"),
+		ChannelId:   ctx.PostValueTrim("channel_id"),
+		Orderer:     ctx.PostValueTrim("orderer"),
+		Sequence:    ctx.PostValueTrim("sequence"),
 	}
 
+	log.Infof("ApproveCC info : %+v \n",info)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if !flag {
+		ctx.JSON(models.FailedMsg("The chaincode has not installed "))
+		return
+	}
+	sequence, _ := strconv.Atoi(info.Sequence)
+
+	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to approve the chaincode "))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(map[string]fab.TransactionID{
+		"txnID": txnID,
+	}))
+
 }
+
+func QueryApprovedCC(ctx context.Context) {
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		UserName:    ctx.PostValueTrim("user_name"),
+		Org:         ctx.PostValueTrim("org"),
+		Peer:        ctx.PostValueTrim("peer"),
+		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
+		ChannelId:   ctx.PostValueTrim("channel_id"),
+		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	log.Infof("QueryApprovedCC info : %+v \n",info)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if !flag {
+		ctx.JSON(models.FailedMsg("The chaincode has not installed "))
+		return
+	}
+
+	sequence, _ := strconv.Atoi(info.Sequence)
+
+	packageId, err := fabricClient.QueryApprovedCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryApprovedCC the chaincode "))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(map[string]string{
+		"packageId": packageId,
+	}))
+
+}
+
+func CheckCCCommitReadiness(ctx context.Context)  {
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		UserName:    ctx.PostValueTrim("user_name"),
+		Org:         ctx.PostValueTrim("org"),
+		Peer:        ctx.PostValueTrim("peer"),
+		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
+		ChannelId:   ctx.PostValueTrim("channel_id"),
+		Sequence:    ctx.PostValueTrim("sequence"),
+		Version:     ctx.PostValueTrim("version"),
+	}
+
+	log.Infof("CheckCCCommitReadiness info : %+v \n",info)
+
+	sequence, _ := strconv.Atoi(info.Sequence)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if !flag {
+		ctx.JSON(models.FailedMsg("The chaincode has not installed "))
+		return
+	}
+
+	// func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelId, peer string, sequence int) (map[string]bool, error) {
+
+	readiness, err := fabricClient.CheckCCCommitReadiness(info.ChaincodeId, info.Version, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to CheckCCCommitReadiness the chaincode "))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(readiness))
+}
+
+
 
 func LifeCycleChaincodeTest(ctx context.Context) {
 

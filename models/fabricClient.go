@@ -497,52 +497,52 @@ func (f *FabricClient) ApproveCC(packageID, chaincodeId, version, channelId, use
 	return txnID, nil
 }
 
-func (f *FabricClient) QueryApprovedCC(ccID, user, org, channelId, peer string) error {
+func (f *FabricClient) QueryApprovedCC(ccID, user, org, channelId, peer string, sequence int) (string, error) {
 	queryApprovedCCReq := resmgmt.LifecycleQueryApprovedCCRequest{
 		Name:     ccID,
-		Sequence: 1,
+		Sequence: int64(sequence),
 	}
 
 	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
 	if err != nil {
 		log.Errorf("Failed to create channel management client : %s \n", err)
-		return err
+		return "", err
 	}
 
 	resp, err := resmgmtClient.LifecycleQueryApprovedCC(channelId, queryApprovedCCReq, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Errorf("Failed to LifecycleQueryApprovedCC : %s \n", err)
-		return err
+		return "", err
 	}
 	log.Infoln(resp.PackageID)
-	return nil
+	return resp.PackageID, nil
 }
 
-func (f *FabricClient) CheckCCCommitReadiness(ccID, user, org, channelId, peer string) error {
+func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelId, peer string, sequence int) (map[string]bool, error) {
 	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP", "Org2MSP"})
 	req := resmgmt.LifecycleCheckCCCommitReadinessRequest{
 		Name:              ccID,
-		Version:           "0",
+		Version:           version,
 		EndorsementPlugin: "escc",
 		ValidationPlugin:  "vscc",
 		SignaturePolicy:   ccPolicy,
-		Sequence:          1,
+		Sequence:          int64(sequence),
 		InitRequired:      true,
 	}
 
 	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
 	if err != nil {
 		log.Errorf("Failed to create channel management client : %s \n", err)
-		return err
+		return nil, err
 	}
 
 	resp, err := resmgmtClient.LifecycleCheckCCCommitReadiness(channelId, req, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Errorf("Failed to LifecycleCheckCCCommitReadiness : %s \n", err)
-		return err
+		return nil , err
 	}
 	log.Infof("%+v \n", resp.Approvals)
-	return nil
+	return resp.Approvals ,nil
 }
 
 func (f *FabricClient) CommitCC(ccID, user, org, channelId, peer string) error {

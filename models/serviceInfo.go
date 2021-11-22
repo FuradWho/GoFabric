@@ -34,6 +34,8 @@ type CcInfo struct {
 	UserName      string `json:"user_name"`
 	ChannelId     string `json:"channel_id"`
 	Peer          string `json:"peer"`
+	Orderer       string `json:"orderer"`
+	Sequence      string `json:"sequence"`
 }
 
 func SuccessData(data interface{}) *ResponseBean {

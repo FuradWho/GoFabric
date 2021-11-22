@@ -36,6 +36,10 @@ func StartIris() {
 		ccApi.Post("/CreateCC", services.CreateCC)
 		ccApi.Post("/InstallCC", services.InstallCC)
 		ccApi.Post("/QueryInstalled", services.QueryInstalled)
+		ccApi.Post("/ApproveCC", services.ApproveCC)
+		ccApi.Post("/QueryApprovedCC", services.QueryApprovedCC)
+		ccApi.Post("/CheckCCCommitReadiness", services.CheckCCCommitReadiness)
+
 
 	}
 
