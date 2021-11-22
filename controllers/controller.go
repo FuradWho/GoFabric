@@ -29,8 +29,8 @@ func StartIris() {
 	{
 		channelApi.Post("/CreateChannel", services.CreateChannel)
 		channelApi.Post("/JoinChannel", services.JoinChannel)
-		channelApi.Get("/GetOrgTargetPeers",services.GetOrgTargetPeers)
-		channelApi.Get("/GetNetworkConfig",services.GetNetworkConfig)
+		channelApi.Get("/GetOrgTargetPeers", services.GetOrgTargetPeers)
+		channelApi.Get("/GetNetworkConfig", services.GetNetworkConfig)
 
 	}
 
@@ -42,8 +42,9 @@ func StartIris() {
 		ccApi.Post("/ApproveCC", services.ApproveCC)
 		ccApi.Post("/QueryApprovedCC", services.QueryApprovedCC)
 		ccApi.Post("/CheckCCCommitReadiness", services.CheckCCCommitReadiness)
-
-
+		ccApi.Post("/RequestInstallCCByOther", services.RequestInstallCCByOther)
+		ccApi.Post("/RequestApproveCCByOther", services.RequestApproveCCByOther)
+		ccApi.Post("/CommitCC", services.CommitCC)
 	}
 
 	app.Listen(":9099")

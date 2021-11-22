@@ -19,6 +19,7 @@ const (
 	//connectConfigDir = "connect-config/channel-connection.yaml"
 	connectConfigDir = "connect-config/orgcpp-config.yaml"
 	chaincodePath    = "/usr/local/soft/fabric-test5/chaincode/newchaincode/test"
+	Admin            = "Admin"
 )
 
 var fabricClient *models.FabricClient
@@ -405,6 +406,152 @@ func CheckCCCommitReadiness(ctx context.Context) {
 
 	ctx.JSON(models.SuccessData(readiness))
 }
+
+func RequestInstallCCByOther(ctx context.Context) {
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		UserName:      Admin,
+		Org:           ctx.PostValueTrim("org"),
+		ChaincodeId:   ctx.PostValueTrim("chaincode_id"),
+		ChaincodePath: chaincodePath,
+		Peer:          ctx.PostValueTrim("peer"),
+	}
+
+	log.Infof("RequestInstallCCByOther info : %+v \n", info)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if flag {
+		ctx.JSON(models.FailedMsg("The chaincode has installed "))
+		return
+	}
+
+	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to RequestInstallCCByOther "))
+		return
+	}
+	log.Infof("txId : %s \n", txId)
+	ctx.JSON(models.SuccessData(map[string]string{
+		"txId": txId,
+	}))
+
+}
+
+func RequestApproveCCByOther(ctx context.Context) {
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		PackageId:   ctx.PostValueTrim("package_id"),
+		UserName:    Admin,
+		Org:         ctx.PostValueTrim("org"),
+		Peer:        ctx.PostValueTrim("peer"),
+		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
+		Version:     ctx.PostValueTrim("version"),
+		ChannelId:   ctx.PostValueTrim("channel_id"),
+		Orderer:     ctx.PostValueTrim("orderer"),
+		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	log.Infof("RequestApproveCCByOther info : %+v \n", info)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if !flag {
+		ctx.JSON(models.FailedMsg("The chaincode has not installed "))
+		return
+	}
+	sequence, _ := strconv.Atoi(info.Sequence)
+
+	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to RequestApproveCCByOther the chaincode "))
+		return
+	}
+
+	ctx.JSON(models.SuccessData(map[string]fab.TransactionID{
+		"txnID": txnID,
+	}))
+
+}
+
+func CommitCC(ctx context.Context){
+	path := ctx.Path()
+	log.Infoln(path)
+
+	info := models.CcInfo{
+		UserName:    ctx.PostValueTrim("user_name"),
+		Org:         ctx.PostValueTrim("org"),
+		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
+		Version:     ctx.PostValueTrim("version"),
+		Peer:        ctx.PostValueTrim("peer"),
+		ChannelId:   ctx.PostValueTrim("channel_id"),
+		Orderer:     ctx.PostValueTrim("orderer"),
+		Sequence:    ctx.PostValueTrim("sequence"),
+	}
+
+	log.Infof("RequestApproveCCByOther info : %+v \n", info)
+
+	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
+		return
+	}
+
+	flag := false
+	for _, chaincode := range installed {
+		if info.ChaincodeId != chaincode.Label {
+			continue
+		} else {
+			flag = true
+		}
+	}
+	if !flag {
+		ctx.JSON(models.FailedMsg("The chaincode has installed "))
+		return
+	}
+
+	sequence, _ := strconv.Atoi(info.Sequence)
+
+	txId , err := fabricClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId,info.Orderer,info.Version,sequence)
+	if err != nil {
+		ctx.JSON(models.FailedMsg("Failed to CommitCC "))
+		return
+	}
+	ctx.JSON(models.SuccessData(map[string]string{
+		"txId": string(txId),
+	}))
+}
+
 
 func GetOrgTargetPeers(ctx context.Context) {
 

@@ -539,19 +539,19 @@ func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelI
 	resp, err := resmgmtClient.LifecycleCheckCCCommitReadiness(channelId, req, resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
 		log.Errorf("Failed to LifecycleCheckCCCommitReadiness : %s \n", err)
-		return nil , err
+		return nil, err
 	}
 	log.Infof("%+v \n", resp.Approvals)
-	return resp.Approvals ,nil
+	return resp.Approvals, nil
 }
 
-func (f *FabricClient) CommitCC(ccID, user, org, channelId, peer string) error {
+func (f *FabricClient) CommitCC(ccID, user, org, channelId, orderer, version string, sequence int) (fab.TransactionID ,error) {
 	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP", "Org2MSP"})
 
 	req := resmgmt.LifecycleCommitCCRequest{
 		Name:              ccID,
-		Version:           "0",
-		Sequence:          1,
+		Version:           version,
+		Sequence:          int64(sequence),
 		EndorsementPlugin: "escc",
 		ValidationPlugin:  "vscc",
 		SignaturePolicy:   ccPolicy,
@@ -561,16 +561,16 @@ func (f *FabricClient) CommitCC(ccID, user, org, channelId, peer string) error {
 	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
 	if err != nil {
 		log.Errorf("Failed to create channel management client : %s \n", err)
-		return err
+		return "", err
 	}
 
-	txnID, err := resmgmtClient.LifecycleCommitCC(channelId, req, resmgmt.WithOrdererEndpoint("orderer.example.com"))
+	txnID, err := resmgmtClient.LifecycleCommitCC(channelId, req, resmgmt.WithOrdererEndpoint(orderer))
 	if err != nil {
 		log.Errorf("Failed to LifecycleCommitCC : %s \n", err)
-		return err
+		return "",err
 	}
 	log.Infof("%+v \n", txnID)
-	return nil
+	return txnID , nil
 }
 
 func (f *FabricClient) QueryCommittedCC(ccID, user, org, channelId, peer string) error {
@@ -704,25 +704,25 @@ func (f *FabricClient) GetNetworkConfig() (fab.NetworkConfig, error) {
 	err := lookup.New(configBackend).UnmarshalKey("organizations", &networkConfig.Organizations)
 	if err != nil {
 		log.Errorf("Failed to unmarsha org :%s \n", err)
-		return  networkConfig, err
+		return networkConfig, err
 	}
 
 	err = lookup.New(configBackend).UnmarshalKey("orderers", &networkConfig.Orderers)
 	if err != nil {
 		log.Errorf("Failed to unmarsha org :%s \n", err)
-		return  networkConfig, err
+		return networkConfig, err
 	}
 
 	err = lookup.New(configBackend).UnmarshalKey("channels", &networkConfig.Channels)
 	if err != nil {
 		log.Errorf("Failed to unmarsha org :%s \n", err)
-		return  networkConfig, err
+		return networkConfig, err
 	}
 
 	err = lookup.New(configBackend).UnmarshalKey("peers", &networkConfig.Peers)
 	if err != nil {
 		log.Errorf("Failed to unmarsha org :%s \n", err)
-		return  networkConfig, err
+		return networkConfig, err
 	}
 
 	return networkConfig, nil
