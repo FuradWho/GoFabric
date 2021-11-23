@@ -1,0 +1,442 @@
+basePath: /
+host: localhost:9099
+info:
+  contact:
+    email: liu1337543811@gmail.com
+    name: FuradWho
+  description: go sdk for Fabric
+  license:
+    name: Fabric 2.3.3
+    url: https://hyperledger-fabric.readthedocs.io/zh_CN/release-2.2/who_we_are.html
+  title: GO Fabric 对于Fabric网络的操作
+  version: "1.0"
+paths:
+  /LifeCycleChaincodeTest:
+    get:
+      description: LifeCycleChaincodeTest-操作测试接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "connection success" }'
+          schema:
+            type: json
+        "400":
+          description: '{ " " }'
+          schema:
+            type: json
+      summary: 操作测试接口
+      tags:
+      - 测试接口
+  /Test:
+    get:
+      description: Test-网络连通性测试
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "connection success" }'
+          schema:
+            type: json
+        "400":
+          description: '{ " " }'
+          schema:
+            type: json
+      summary: 网络连通性测试
+      tags:
+      - 测试接口
+  /cc/ApproveCC:
+    post:
+      consumes:
+      - multipart/form-data
+      description: ApproveCC-请求当前组织批准链码
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      - description: 链码所在的通道
+        in: formData
+        name: ChannelId
+        required: true
+        type: string
+      - description: 请求排序节点
+        in: formData
+        name: Orderer
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: ChaincodeId
+        required: true
+        type: string
+      - description: 链码包ID
+        in: formData
+        name: PackageId
+        required: true
+        type: string
+      - description: 链码版本
+        in: formData
+        name: Version
+        required: true
+        type: string
+      - description: 链码更新次数
+        in: formData
+        name: Sequence
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to approve the chaincode ","data":
+            "" }'
+          schema:
+            type: json
+      summary: 请求当前组织批准链码
+      tags:
+      - 链码操作
+  /cc/CommitCC:
+    post:
+      consumes:
+      - multipart/form-data
+      description: CommitCC-提交已通过MSP认证的链码
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: user_name
+        required: true
+        type: string
+      - description: 链码所在的组织
+        in: formData
+        name: org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: peer
+        required: true
+        type: string
+      - description: 链码所在的通道
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: 请求排序节点
+        in: formData
+        name: orderer
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: chaincode_id
+        required: true
+        type: string
+      - description: 链码版本
+        in: formData
+        name: version
+        required: true
+        type: string
+      - description: 链码更新次数
+        in: formData
+        name: sequence
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to CommitCC ","data": "" }'
+          schema:
+            type: json
+      summary: 提交已通过MSP认证的链码
+      tags:
+      - 链码操作
+  /cc/InstallCC:
+    post:
+      consumes:
+      - multipart/form-data
+      description: InstallCC-安装链码
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 安装链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: ChaincodeId
+        required: true
+        type: string
+      - description: 安装链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "The chaincode has installed ","data":
+            "" }'
+          schema:
+            type: json
+      summary: 安装链码
+      tags:
+      - 链码操作
+  /cc/QueryApprovedCC:
+    post:
+      consumes:
+      - multipart/form-data
+      description: QueryApprovedCC-查询是否通过当前组织批准链码
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      - description: 链码所在的通道
+        in: formData
+        name: ChannelId
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: ChaincodeId
+        required: true
+        type: string
+      - description: 链码更新次数
+        in: formData
+        name: Sequence
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"packageId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to QueryApprovedCC the chaincode
+            ","data": "" }'
+          schema:
+            type: json
+      summary: 查询是否通过当前组织批准链码
+      tags:
+      - 链码操作
+  /cc/QueryInstalled:
+    post:
+      consumes:
+      - multipart/form-data
+      description: QueryInstalled-请求当前节点安装的链码
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"chaincodes":[]}
+            }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to QueryInstalled chaincode","data":
+            "" }'
+          schema:
+            type: json
+      summary: 请求当前节点安装的链码
+      tags:
+      - 链码操作
+  /cc/RequestApproveCCByOther:
+    post:
+      consumes:
+      - multipart/form-data
+      description: RequestApproveCCByOther-请求其他组织批准链码
+      parameters:
+      - description: 链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      - description: 链码所在的通道
+        in: formData
+        name: ChannelId
+        required: true
+        type: string
+      - description: 请求排序节点
+        in: formData
+        name: Orderer
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: ChaincodeId
+        required: true
+        type: string
+      - description: 链码包ID
+        in: formData
+        name: PackageId
+        required: true
+        type: string
+      - description: 链码版本
+        in: formData
+        name: Version
+        required: true
+        type: string
+      - description: 链码更新次数
+        in: formData
+        name: Sequence
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to RequestApproveCCByOther the
+            chaincode ","data": "" }'
+          schema:
+            type: json
+      summary: 请求其他组织批准链码
+      tags:
+      - 链码操作
+  /cc/RequestInstallCCByOther:
+    post:
+      consumes:
+      - multipart/form-data
+      description: RequestInstallCCByOther-请求其他组织安装链码
+      parameters:
+      - description: 链码所在的组织
+        in: formData
+        name: Org
+        required: true
+        type: string
+      - description: 链码所在的节点
+        in: formData
+        name: Peer
+        required: true
+        type: string
+      - description: 链码ID(名称)
+        in: formData
+        name: ChaincodeId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to RequestInstallCCByOther ","data":
+            "" }'
+          schema:
+            type: json
+      summary: 请求其他组织安装链码
+      tags:
+      - 链码操作
+  /channel/GetNetworkConfig:
+    get:
+      description: GetNetworkConfig-获取"网络通道组织节点"信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to GetNetworkConfig ","data":
+            "" }'
+          schema:
+            type: json
+      summary: 获取网络信息
+      tags:
+      - 网络通道操作
+  /channel/GetOrgTargetPeers:
+    get:
+      description: GetOrgTargetPeers-获取组织节点信息
+      parameters:
+      - description: 所在组织名
+        in: path
+        name: org
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"peers":[]} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to GetOrgTargetPeers ","data":
+            "" }'
+          schema:
+            type: json
+      summary: 获取组织节点信息
+      tags:
+      - 网络通道操作
+swagger: "2.0"

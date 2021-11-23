@@ -2,20 +2,42 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"gofabric/services"
+
+	"github.com/iris-contrib/swagger/v12"
+	"github.com/iris-contrib/swagger/v12/swaggerFiles"
+
+	_ "gofabric/docs"
 )
 
+
+// @title GO Fabric 对于Fabric网络的操作
+// @version 1.0
+// @description go sdk for Fabric
+
+// @contact.name FuradWho
+// @contact.email liu1337543811@gmail.com
+
+// @license.name Fabric 2.3.3
+// @license.url https://hyperledger-fabric.readthedocs.io/zh_CN/release-2.2/who_we_are.html
+
+// StartIris
+// @host localhost:9099
+// @BasePath /
 func StartIris() {
 	app := iris.New()
 	app.Use(Cors)
 
+	config := &swagger.Config{
+		URL:          "http://33p67e8007.qicp.vip/swagger/doc.json",
+		DeepLinking:  true,
+	}
+
+	app.Get("/swagger/{any:path}",swagger.CustomWrapHandler(config,swaggerFiles.Handler))
+
 	testApi := app.Party("/")
 	{
-		testApi.Get("/test", func(context context.Context) {
-			context.JSON("connection success")
-		})
-
+		testApi.Get("/test", services.Test)
 		testApi.Get("/LifeCycleChaincodeTest", services.LifeCycleChaincodeTest)
 	}
 

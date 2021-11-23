@@ -15,6 +15,8 @@ import (
 	"os"
 	"strconv"
 	"sync"
+
+
 )
 
 const (
@@ -41,6 +43,18 @@ func NewFabricClient() {
 	if err != nil {
 		return
 	}
+}
+
+// Test
+// @Summary 网络连通性测试
+// @Description Test-网络连通性测试
+// @Tags 测试接口
+// @Produce json
+// @Success 200 {json} json "{ "code": 200, "msg": "connection success" }"
+// @Failure 400 {json} json "{ " " }"
+// @Router /Test [get]
+func Test(ctx context.Context){
+	ctx.JSON(models.SuccessMsg("connection success"))
 }
 
 func CreateUser(context context.Context) {
@@ -186,8 +200,20 @@ func CreateCC(context context.Context) {
 
 }
 
+// InstallCC
+// @Summary 安装链码
+// @Description InstallCC-安装链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param Org formData string true "安装链码所在的组织"
+// @Param ChaincodeId formData string true "链码ID(名称)"
+// @Param Peer formData string true "安装链码所在的节点"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "The chaincode has installed ","data": "" }"
+// @Router /cc/InstallCC [post]
 func InstallCC(ctx context.Context) {
-
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -230,6 +256,8 @@ func InstallCC(ctx context.Context) {
 	var lck sync.Mutex
 	lck.Lock()
 
+	log.Infoln("locking ....")
+
 	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to Install chaincode"))
@@ -237,6 +265,7 @@ func InstallCC(ctx context.Context) {
 	}
 
 	defer lck.Unlock()
+	log.Infoln("Unlock ....")
 
 	log.Infof("txId : %s \n", txId)
 	ctx.JSON(models.SuccessData(map[string]string{
@@ -245,6 +274,18 @@ func InstallCC(ctx context.Context) {
 
 }
 
+// QueryInstalled
+// @Summary 请求当前节点安装的链码
+// @Description QueryInstalled-请求当前节点安装的链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param Org formData string true "链码所在的组织"
+// @Param Peer formData string true "链码所在的节点"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"chaincodes":[]} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to QueryInstalled chaincode","data": "" }"
+// @Router /cc/QueryInstalled [post]
 func QueryInstalled(ctx context.Context) {
 
 	path := ctx.Path()
@@ -276,6 +317,24 @@ func QueryInstalled(ctx context.Context) {
 
 }
 
+// ApproveCC
+// @Summary 请求当前组织批准链码
+// @Description ApproveCC-请求当前组织批准链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param Org formData string true "链码所在的组织"
+// @Param Peer formData string true "链码所在的节点"
+// @Param ChannelId formData string true "链码所在的通道"
+// @Param Orderer formData string true "请求排序节点"
+// @Param ChaincodeId formData string true "链码ID(名称)"
+// @Param PackageId formData string true "链码包ID"
+// @Param Version formData string true "链码版本"
+// @Param Sequence formData string true "链码更新次数"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to approve the chaincode ","data": "" }"
+// @Router /cc/ApproveCC [post]
 func ApproveCC(ctx context.Context) {
 
 	path := ctx.Path()
@@ -333,11 +392,26 @@ func ApproveCC(ctx context.Context) {
 	lck.Unlock()
 
 	ctx.JSON(models.SuccessData(map[string]fab.TransactionID{
-		"txnID": txnID,
+		"txId": txnID,
 	}))
 
 }
 
+// QueryApprovedCC
+// @Summary 查询是否通过当前组织批准链码
+// @Description QueryApprovedCC-查询是否通过当前组织批准链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param Org formData string true "链码所在的组织"
+// @Param Peer formData string true "链码所在的节点"
+// @Param ChannelId formData string true "链码所在的通道"
+// @Param ChaincodeId formData string true "链码ID(名称)"
+// @Param Sequence formData string true "链码更新次数"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"packageId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to QueryApprovedCC the chaincode ","data": "" }"
+// @Router /cc/QueryApprovedCC [post]
 func QueryApprovedCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
@@ -453,6 +527,18 @@ func CheckCCCommitReadiness(ctx context.Context) {
 	ctx.JSON(models.SuccessData(readiness))
 }
 
+// RequestInstallCCByOther
+// @Summary 请求其他组织安装链码
+// @Description RequestInstallCCByOther-请求其他组织安装链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param Org formData string true "链码所在的组织"
+// @Param Peer formData string true "链码所在的节点"
+// @Param ChaincodeId formData string true "链码ID(名称)"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to RequestInstallCCByOther ","data": "" }"
+// @Router /cc/RequestInstallCCByOther [post]
 func RequestInstallCCByOther(ctx context.Context) {
 
 	path := ctx.Path()
@@ -510,6 +596,23 @@ func RequestInstallCCByOther(ctx context.Context) {
 
 }
 
+// RequestApproveCCByOther
+// @Summary 请求其他组织批准链码
+// @Description RequestApproveCCByOther-请求其他组织批准链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param Org formData string true "链码所在的组织"
+// @Param Peer formData string true "链码所在的节点"
+// @Param ChannelId formData string true "链码所在的通道"
+// @Param Orderer formData string true "请求排序节点"
+// @Param ChaincodeId formData string true "链码ID(名称)"
+// @Param PackageId formData string true "链码包ID"
+// @Param Version formData string true "链码版本"
+// @Param Sequence formData string true "链码更新次数"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to RequestApproveCCByOther the chaincode ","data": "" }"
+// @Router /cc/RequestApproveCCByOther [post]
 func RequestApproveCCByOther(ctx context.Context) {
 
 	path := ctx.Path()
@@ -570,6 +673,23 @@ func RequestApproveCCByOther(ctx context.Context) {
 
 }
 
+// CommitCC
+// @Summary 提交已通过MSP认证的链码
+// @Description CommitCC-提交已通过MSP认证的链码
+// @Tags 链码操作
+// @Accept mpfd
+// @Produce json
+// @Param user_name formData string true "所在组织的用户名"
+// @Param org formData string true "链码所在的组织"
+// @Param peer formData string true "链码所在的节点"
+// @Param channel_id formData string true "链码所在的通道"
+// @Param orderer formData string true "请求排序节点"
+// @Param chaincode_id formData string true "链码ID(名称)"
+// @Param version formData string true "链码版本"
+// @Param sequence formData string true "链码更新次数"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to CommitCC ","data": "" }"
+// @Router /cc/CommitCC [post]
 func CommitCC(ctx context.Context){
 	path := ctx.Path()
 	log.Infoln(path)
@@ -631,6 +751,15 @@ func CommitCC(ctx context.Context){
 	}))
 }
 
+// GetOrgTargetPeers
+// @Summary 获取组织节点信息
+// @Description GetOrgTargetPeers-获取组织节点信息
+// @Tags 网络通道操作
+// @Produce json
+// @Param org path string true "所在组织名"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"peers":[]} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to GetOrgTargetPeers ","data": "" }"
+// @Router /channel/GetOrgTargetPeers [get]
 func GetOrgTargetPeers(ctx context.Context) {
 
 	path := ctx.Path()
@@ -653,7 +782,14 @@ func GetOrgTargetPeers(ctx context.Context) {
 	}))
 
 }
-
+// GetNetworkConfig
+// @Summary 获取网络信息
+// @Description GetNetworkConfig-获取"网络通道组织节点"信息
+// @Tags 网络通道操作
+// @Produce json
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to GetNetworkConfig ","data": "" }"
+// @Router /channel/GetNetworkConfig [get]
 func GetNetworkConfig(ctx context.Context) {
 
 	path := ctx.Path()
@@ -669,6 +805,14 @@ func GetNetworkConfig(ctx context.Context) {
 
 }
 
+// LifeCycleChaincodeTest
+// @Summary 操作测试接口
+// @Description LifeCycleChaincodeTest-操作测试接口
+// @Tags 测试接口
+// @Produce json
+// @Success 200 {json} json "{ "code": 200, "msg": "connection success" }"
+// @Failure 400 {json} json "{ " " }"
+// @Router /LifeCycleChaincodeTest [get]
 func LifeCycleChaincodeTest(ctx context.Context) {
 
 	path := ctx.Path()
