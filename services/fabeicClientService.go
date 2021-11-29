@@ -2,7 +2,6 @@ package services
 
 import (
 	"archive/zip"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-playground/validator/v10"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
@@ -15,8 +14,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-
-
 )
 
 const (
@@ -57,6 +54,20 @@ func Test(ctx context.Context){
 	ctx.JSON(models.SuccessMsg("connection success"))
 }
 
+// CreateUser
+// @Summary　创建用户
+// @Description CreateUser-创建用户
+// @Tags 用户通道操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param Secret formData string true "所在组织的用户密码"
+// @Param UserType formData string true "用户类型"
+// @Param OrgName formData string true "安装链码所在的组织"
+// @Param CaName formData string true "所申请组织的CA服务器"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": { "PriFile": priFile, "PubFile" : pubFile }}"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Field to CreateUser","data": "" }"
+// @Router /user/CreateUser [post]
 func CreateUser(context context.Context) {
 
 	path := context.Path()
@@ -80,7 +91,14 @@ func CreateUser(context context.Context) {
 		CaName:   context.PostValueTrim("ca_name"),
 	}
 
-	fmt.Println(user.CaName)
+	err := validate.Struct(user)
+	if err != nil {
+		log.Errorln(err)
+		context.JSON(models.FailedData("Field does not match",err))
+		return
+	}
+
+	log.Infof("CreateUser info : %+v \n", user)
 
 	priFile, pubFile, err := fabricClient.CreateUser(user.UserName, user.Secret, user.UserType, user.OrgName, user.CaName)
 	if err != nil {
@@ -120,6 +138,19 @@ func CreateUser(context context.Context) {
 
 }
 
+// CreateChannel
+// @Summary　创建通道
+// @Description CreateChannel-创建通道
+// @Tags 用户通道操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param OrgName formData string true "安装链码所在的组织"
+// @Param ChannelId formData string true "创建通道名称"
+// @Param Orderer formData string true "排序节点"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to create channel","data": "" }"
+// @Router /channel/CreateChannel [post]
 func CreateChannel(context context.Context) {
 
 	path := context.Path()
@@ -129,15 +160,25 @@ func CreateChannel(context context.Context) {
 		ChannelId: context.PostValueTrim("channel_id"),
 		UserName:  context.PostValueTrim("user_name"),
 		Org:       context.PostValueTrim("org"),
+		Orderer:   context.PostValueTrim("orderer"),
 	}
 
-	_, err := fabricClient.GetOrgTargetPeers(info.Org)
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		context.JSON(models.FailedData("Field does not match",err))
+		return
+	}
+
+	log.Infof("CreateChannel info : %+v \n", info)
+
+	_, err = fabricClient.GetOrgTargetPeers(info.Org)
 	if err != nil {
 		context.JSON(models.FailedMsg(err.Error()))
 		return
 	}
 
-	txId, err := fabricClient.CreateChannel(info.Org, info.UserName, info.ChannelId)
+	txId, err := fabricClient.CreateChannel(info.Org, info.UserName, info.ChannelId,info.Orderer)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to create channel"))
 		return
@@ -149,20 +190,40 @@ func CreateChannel(context context.Context) {
 
 }
 
+
+// JoinChannel
+// @Summary　加入当前通道
+// @Description JoinChannel-加入当前通道
+// @Tags 用户通道操作
+// @Accept mpfd
+// @Produce json
+// @Param UserName formData string true "所在组织的用户名"
+// @Param OrgName formData string true "安装链码所在的组织"
+// @Param ChannelId formData string true "创建通道名称"
+// @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"success to join channel"} }"
+// @Failure 400 {json} json "{ "code": 400, "msg": "Failed to join channel","data": "" }"
+// @Router /channel/JoinChannel [post]
 func JoinChannel(context context.Context) {
 
 	path := context.Path()
 	log.Infoln(path)
 
-	info := models.CreateChannelInfo{
+	info := models.JoinChannelInfo{
 		ChannelId: context.PostValueTrim("channel_id"),
 		UserName:  context.PostValueTrim("user_name"),
 		Org:       context.PostValueTrim("org"),
 	}
 
-	log.Infof("join channel info : %+v \n", info)
+	err := validate.Struct(info)
+	if err != nil {
+		log.Errorln(err)
+		context.JSON(models.FailedData("Field does not match",err))
+		return
+	}
 
-	err := fabricClient.JoinChannel(info.ChannelId, info.UserName, info.Org)
+	log.Infof("JoinChannel info : %+v \n", info)
+
+	err = fabricClient.JoinChannel(info.ChannelId, info.UserName, info.Org)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to join channel"))
 		return
@@ -890,9 +951,11 @@ func LifeCycleChaincodeTest(ctx context.Context) {
 	//	return
 	//}
 
-	fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
+	//fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 
+	fabricClient.QueryConfigBlockFromOrder("Admin","org1","mychannel","orderer.example.com")
 }
+
 
 func zipFiles(filename string, files []string) error {
 	newZipFile, err := os.Create(filename)
@@ -944,3 +1007,13 @@ func zipFiles(filename string, files []string) error {
 
 	return nil
 }
+
+func AuthenticateUser(ctx context.Context)  {
+
+	path := ctx.Path()
+	log.Infoln(path)
+
+	fabricClient.AuthenticateUser("org1")
+
+}
+

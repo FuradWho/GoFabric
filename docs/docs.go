@@ -586,6 +586,65 @@ var doc = `{
                 }
             }
         },
+        "/channel/CreateChannel": {
+            "post": {
+                "description": "CreateChannel-创建通道",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户通道操作"
+                ],
+                "summary": "创建通道",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "所在组织的用户名",
+                        "name": "UserName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "安装链码所在的组织",
+                        "name": "OrgName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建通道名称",
+                        "name": "ChannelId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "排序节点",
+                        "name": "Orderer",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{ \"code\": 200, \"msg\": \"success\",\"data\": {\"txId\":\"\"} }",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "400": {
+                        "description": "{ \"code\": 400, \"msg\": \"Failed to create channel\",\"data\": \"\" }",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        },
         "/channel/GetNetworkConfig": {
             "get": {
                 "description": "GetNetworkConfig-获取\"网络通道组织节点\"信息",
@@ -640,6 +699,124 @@ var doc = `{
                     },
                     "400": {
                         "description": "{ \"code\": 400, \"msg\": \"Failed to GetOrgTargetPeers \",\"data\": \"\" }",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        },
+        "/channel/JoinChannel": {
+            "post": {
+                "description": "JoinChannel-加入当前通道",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户通道操作"
+                ],
+                "summary": "加入当前通道",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "所在组织的用户名",
+                        "name": "UserName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "安装链码所在的组织",
+                        "name": "OrgName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建通道名称",
+                        "name": "ChannelId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{ \"code\": 200, \"msg\": \"success\",\"data\": {\"success to join channel\"} }",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "400": {
+                        "description": "{ \"code\": 400, \"msg\": \"Failed to join channel\",\"data\": \"\" }",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/CreateUser": {
+            "post": {
+                "description": "CreateUser-创建用户",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户通道操作"
+                ],
+                "summary": "创建用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "所在组织的用户名",
+                        "name": "UserName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "所在组织的用户密码",
+                        "name": "Secret",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户类型",
+                        "name": "UserType",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "安装链码所在的组织",
+                        "name": "OrgName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "所申请组织的CA服务器",
+                        "name": "CaName",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{ \"code\": 200, \"msg\": \"success\",\"data\": { \"PriFile\": priFile, \"PubFile\" : pubFile }}",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "400": {
+                        "description": "{ \"code\": 400, \"msg\": \"Field to CreateUser\",\"data\": \"\" }",
                         "schema": {
                             "type": "json"
                         }

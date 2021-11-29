@@ -397,6 +397,47 @@ paths:
       summary: 请求其他组织安装链码
       tags:
       - 链码操作
+  /channel/CreateChannel:
+    post:
+      consumes:
+      - multipart/form-data
+      description: CreateChannel-创建通道
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 安装链码所在的组织
+        in: formData
+        name: OrgName
+        required: true
+        type: string
+      - description: 创建通道名称
+        in: formData
+        name: ChannelId
+        required: true
+        type: string
+      - description: 排序节点
+        in: formData
+        name: Orderer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to create channel","data": ""
+            }'
+          schema:
+            type: json
+      summary: 创建通道
+      tags:
+      - 用户通道操作
   /channel/GetNetworkConfig:
     get:
       description: GetNetworkConfig-获取"网络通道组织节点"信息
@@ -439,4 +480,87 @@ paths:
       summary: 获取组织节点信息
       tags:
       - 网络通道操作
+  /channel/JoinChannel:
+    post:
+      consumes:
+      - multipart/form-data
+      description: JoinChannel-加入当前通道
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 安装链码所在的组织
+        in: formData
+        name: OrgName
+        required: true
+        type: string
+      - description: 创建通道名称
+        in: formData
+        name: ChannelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": {"success to join
+            channel"} }'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Failed to join channel","data": ""
+            }'
+          schema:
+            type: json
+      summary: 加入当前通道
+      tags:
+      - 用户通道操作
+  /user/CreateUser:
+    post:
+      consumes:
+      - multipart/form-data
+      description: CreateUser-创建用户
+      parameters:
+      - description: 所在组织的用户名
+        in: formData
+        name: UserName
+        required: true
+        type: string
+      - description: 所在组织的用户密码
+        in: formData
+        name: Secret
+        required: true
+        type: string
+      - description: 用户类型
+        in: formData
+        name: UserType
+        required: true
+        type: string
+      - description: 安装链码所在的组织
+        in: formData
+        name: OrgName
+        required: true
+        type: string
+      - description: 所申请组织的CA服务器
+        in: formData
+        name: CaName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{ "code": 200, "msg": "success","data": { "PriFile": priFile,
+            "PubFile" : pubFile }}'
+          schema:
+            type: json
+        "400":
+          description: '{ "code": 400, "msg": "Field to CreateUser","data": "" }'
+          schema:
+            type: json
+      summary: 创建用户
+      tags:
+      - 用户通道操作
 swagger: "2.0"

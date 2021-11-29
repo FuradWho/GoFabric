@@ -39,6 +39,8 @@ func StartIris() {
 	{
 		testApi.Get("/test", services.Test)
 		testApi.Get("/LifeCycleChaincodeTest", services.LifeCycleChaincodeTest)
+		testApi.Get("/AuthenticateUser", services.AuthenticateUser)
+
 	}
 
 	// users API operate

@@ -201,6 +201,37 @@ func (f *FabricClient) CreateUser(userName string, secret string, userType strin
 	return priFile, pubFile, nil
 }
 
+func (f *FabricClient) AuthenticateUser(orgName string){
+
+	ctx := f.sdk.Context()
+	mspClient, err := mspclient.New(ctx, mspclient.WithOrg(orgName))
+	if err != nil {
+		log.Errorf("Failed to create msp client: %s\n", err)
+		return
+	}
+
+	caInfo, err := mspClient.GetCAInfo()
+	if err != nil {
+		log.Errorf("Failed to get CA Info :%s \n", err)
+		return
+	}
+
+	log.Infoln(caInfo.CAName)
+
+	affiliations, err := mspClient.GetAllIdentities()
+	if err != nil {
+		log.Printf("%s \n",err)
+	}
+
+	for _ , info := range affiliations{
+		fmt.Println(info.ID)
+		fmt.Println(info.Type)
+		fmt.Println(info.Attributes)
+		fmt.Println("----------------------")
+	}
+
+}
+
 func (f *FabricClient) GetKeyFile(id msp.SigningIdentity) (string, string) {
 
 	priFile := hex.EncodeToString(id.PrivateKey().SKI()) + "_sk"
@@ -211,12 +242,12 @@ func (f *FabricClient) GetKeyFile(id msp.SigningIdentity) (string, string) {
 
 func (f *FabricClient) osCmd(channelId string) (string, error) {
 
-	channelTx := "/usr/local/hyper/test2/configtx/channel-artifacts/"
+	channelTx := "/usr/local/hyper/test5/channel-artifacts/"
 
-	cmdStr := "cd /usr/local/hyper/test2" +
+	cmdStr := "cd /usr/local/hyper/test5" +
 		"&&export PATH=${PATH}/../bin:${PWD}:$PATH" +
 		"&&export FABRIC_CFG_PATH=${PWD}" +
-		"&&configtxgen -profile TwoOrgsChannel -outputCreateChannelTx " +
+		"&&configtxgen -profile TwoOrgsChannels -outputCreateChannelTx " +
 		channelTx + "xxx_channel.tx -channelID xxx_channel"
 
 	cmdStr = strings.ReplaceAll(cmdStr, "xxx_channel", channelId)
@@ -231,7 +262,7 @@ func (f *FabricClient) osCmd(channelId string) (string, error) {
 
 	time.Sleep(time.Duration(5) * time.Second)
 
-	err := os.Chmod("/usr/local/hyper/test2/configtx/channel-artifacts/"+channelId+".tx", 0777)
+	err := os.Chmod("/usr/local/hyper/test5/channel-artifacts/"+channelId+".tx", 0777)
 	if err != nil {
 		log.Errorf("Failed to os chmod file : %s \n", err)
 		return "", err
@@ -242,7 +273,7 @@ func (f *FabricClient) osCmd(channelId string) (string, error) {
 	return channelTx, nil
 }
 
-func (f *FabricClient) CreateChannel(org, userName, channelId string) (string, error) {
+func (f *FabricClient) CreateChannel(org, userName, channelId, orderer string) (string, error) {
 
 	channelTx, err := f.osCmd(channelId)
 	if err != nil {
@@ -273,11 +304,13 @@ func (f *FabricClient) CreateChannel(org, userName, channelId string) (string, e
 		SigningIdentities: []msp.SigningIdentity{adminidentity},
 	}
 
-	resp, err := resmgmtClient.SaveChannel(req, resmgmt.WithOrdererEndpoint("orderer1-org0"))
+	resp, err := resmgmtClient.SaveChannel(req, resmgmt.WithOrdererEndpoint(orderer))
 	if err != nil {
 		log.Errorf("Failed to save channel : %s \n", err)
 		return "", err
 	}
+
+	log.Infof("channel resp : %+v \n",resp)
 
 	return string(resp.TransactionID), nil
 }
@@ -592,23 +625,6 @@ func (f *FabricClient) QueryCommittedCC(ccID, user, org, channelId, peer string)
 	return nil
 }
 
-//func (f *FabricClient)  InitCC(ccID , user , org ,channelId ,peer string) {
-//	//prepare channel client context using client context
-//	clientChannelContext := f.sdk.ChannelContext(channelId, fabsdk.WithUser(user), fabsdk.WithOrg(org))
-//	// Channel client is used to query and execute transactions (Org1 is default org)
-//	client, err := channel.New(clientChannelContext)
-//	if err != nil {
-//		t.Fatalf("Failed to create new channel client: %s", err)
-//	}
-//
-//	// init
-//	_, err = client.Execute(channel.Request{ChaincodeID: ccID, Fcn: "init", Args: integration.ExampleCCInitArgsLc(), IsInit: true},
-//		channel.WithRetry(retry.DefaultChannelOpts))
-//	if err != nil {
-//		t.Fatalf("Failed to init: %s", err)
-//	}
-//}
-
 func (f *FabricClient) InstallChaincode(chaincodeId, chaincodePath, version string) error {
 	//ccPkg, err := gopackager.NewCCPackage(chaincodePath, f.GoPath)
 	//if err != nil {
@@ -743,3 +759,42 @@ func (f *FabricClient) QueryLedger() error {
 
 	return nil
 }
+
+func (f *FabricClient) QueryConfigBlockFromOrder(user , org ,channelId ,orderer string) error {
+
+	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
+	if err != nil {
+		log.Errorf("Failed to create channel management client : %s \n", err)
+		return err
+	}
+
+	fromOrderer, err := resmgmtClient.QueryConfigFromOrderer(channelId, resmgmt.WithOrdererEndpoint(orderer))
+	if err != nil {
+		log.Errorf("Failed to QueryConfigFromOrderer : %s \n", err)
+		return err
+	}
+	log.Infof("Config Block : %+v \n",fromOrderer)
+	return nil
+
+}
+
+//func (f *FabricClient)  InitCC(ccID , user , org ,channelId ,peer string) {
+//	//prepare channel client context using client context
+//	clientChannelContext := f.sdk.ChannelContext(channelId, fabsdk.WithUser(user), fabsdk.WithOrg(org))
+//	// Channel client is used to query and execute transactions (Org1 is default org)
+//	client, err := channel.New(clientChannelContext)
+//	if err != nil {
+//		t.Fatalf("Failed to create new channel client: %s", err)
+//	}
+//
+//	// init
+//	_, err = client.Execute(channel.Request{ChaincodeID: ccID, Fcn: "init", Args: integration.ExampleCCInitArgsLc(), IsInit: true},
+//		channel.WithRetry(retry.DefaultChannelOpts))
+//	if err != nil {
+//		t.Fatalf("Failed to init: %s", err)
+//	}
+//}
+
+
+
+
