@@ -18,17 +18,7 @@ func main() {
 	})
 	log.Out = os.Stdout
 
-
-	// test for configtxlator
-
-	//get, err := http.Post("http://127.0.0.1:7059/protolator/decode/common.Config")
-	//if err != nil {
-	//	return
-	//}
-	//log.Infof("%+v \n",get)
-
 	services.NewFabricClient()
 	controllers.StartIris()
 
 }
-
