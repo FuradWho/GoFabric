@@ -1,4 +1,28 @@
-# peer channel create -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/channel.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+# NetWork 操作
+
+**创建通道**
+```shell
+peer channel create -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/channel.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+```
+
+**加入通道**
+```shell
+peer channel join -b mychannel.block
+```
+
+**显示已加入的通道**
+```shell
+peer channel list
+```
+
+**docker 与 宿主机复制文件**
+```shell
+docker cp container:xxx  xxx
+```
+
+peer channel update -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/OrgGoMSPanchors.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+
 
 # peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name sacc --version 1.0 --sequence 1 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --output json
 
@@ -10,7 +34,6 @@
 
 # docker cp clicpp:/opt/gopath/src/github.com/hyperledger/fabric/peer/mychannel.block ./channel-artifacts/
 
-# peer channel join -b mychannel.block
 
 # peer channel update -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/OrgGoMSPanchors.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
