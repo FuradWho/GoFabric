@@ -1,4 +1,6 @@
-# peer channel create -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/channel.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+# NetWork
+
+## peer channel create -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/channel.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 # peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name sacc --version 1.0 --sequence 1 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --output json
 
@@ -17,9 +19,11 @@
 # peer channel update -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/OrgCppMSPanchors.tx --tls true --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 # anzhuang lianma
+
 # docker cp sacc.tar.gz cligo:/opt/gopath/src/github.com/hyperledger/fabric/peer
 
 # peer lifecycle chaincode install sacc.tar.gz
+
 # sacc_1:f8118a8da86e3158fc37670cca537576a4fa2e3c4c56fbb22153d2bda4515975
 
 # peer lifecycle chaincode queryinstalled

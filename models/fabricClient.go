@@ -201,7 +201,7 @@ func (f *FabricClient) CreateUser(userName string, secret string, userType strin
 	return priFile, pubFile, nil
 }
 
-func (f *FabricClient) AuthenticateUser(orgName string){
+func (f *FabricClient) AuthenticateUser(orgName string) {
 
 	ctx := f.sdk.Context()
 	mspClient, err := mspclient.New(ctx, mspclient.WithOrg(orgName))
@@ -220,10 +220,10 @@ func (f *FabricClient) AuthenticateUser(orgName string){
 
 	affiliations, err := mspClient.GetAllIdentities()
 	if err != nil {
-		log.Printf("%s \n",err)
+		log.Printf("%s \n", err)
 	}
 
-	for _ , info := range affiliations{
+	for _, info := range affiliations {
 		fmt.Println(info.ID)
 		fmt.Println(info.Type)
 		fmt.Println(info.Attributes)
@@ -310,7 +310,7 @@ func (f *FabricClient) CreateChannel(org, userName, channelId, orderer string) (
 		return "", err
 	}
 
-	log.Infof("channel resp : %+v \n",resp)
+	log.Infof("channel resp : %+v \n", resp)
 
 	return string(resp.TransactionID), nil
 }
@@ -578,7 +578,7 @@ func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelI
 	return resp.Approvals, nil
 }
 
-func (f *FabricClient) CommitCC(ccID, user, org, channelId, orderer, version string, sequence int) (fab.TransactionID ,error) {
+func (f *FabricClient) CommitCC(ccID, user, org, channelId, orderer, version string, sequence int) (fab.TransactionID, error) {
 	ccPolicy := policydsl.SignedByAnyMember([]string{"Org1MSP", "Org2MSP"})
 
 	req := resmgmt.LifecycleCommitCCRequest{
@@ -600,10 +600,10 @@ func (f *FabricClient) CommitCC(ccID, user, org, channelId, orderer, version str
 	txnID, err := resmgmtClient.LifecycleCommitCC(channelId, req, resmgmt.WithOrdererEndpoint(orderer))
 	if err != nil {
 		log.Errorf("Failed to LifecycleCommitCC : %s \n", err)
-		return "",err
+		return "", err
 	}
 	log.Infof("%+v \n", txnID)
-	return txnID , nil
+	return txnID, nil
 }
 
 func (f *FabricClient) QueryCommittedCC(ccID, user, org, channelId, peer string) error {
@@ -760,7 +760,7 @@ func (f *FabricClient) QueryLedger() error {
 	return nil
 }
 
-func (f *FabricClient) QueryConfigBlockFromOrder(user , org ,channelId ,orderer string) error {
+func (f *FabricClient) QueryConfigBlockFromOrder(user, org, channelId, orderer string) error {
 
 	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
 	if err != nil {
@@ -773,7 +773,7 @@ func (f *FabricClient) QueryConfigBlockFromOrder(user , org ,channelId ,orderer 
 		log.Errorf("Failed to QueryConfigFromOrderer : %s \n", err)
 		return err
 	}
-	log.Infof("Config Block : %+v \n",fromOrderer)
+	log.Infof("Config Block : %+v \n", fromOrderer)
 	return nil
 
 }
@@ -794,7 +794,3 @@ func (f *FabricClient) QueryConfigBlockFromOrder(user , org ,channelId ,orderer 
 //		t.Fatalf("Failed to init: %s", err)
 //	}
 //}
-
-
-
-

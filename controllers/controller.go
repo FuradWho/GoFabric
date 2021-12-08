@@ -10,7 +10,6 @@ import (
 	_ "gofabric/docs"
 )
 
-
 // @title GO Fabric 对于Fabric网络的操作
 // @version 1.0
 // @description go sdk for Fabric
@@ -29,11 +28,11 @@ func StartIris() {
 	app.Use(Cors)
 
 	config := &swagger.Config{
-		URL:          "http://33p67e8007.qicp.vip/swagger/doc.json",
-		DeepLinking:  true,
+		URL:         "http://33p67e8007.qicp.vip/swagger/doc.json",
+		DeepLinking: true,
 	}
 
-	app.Get("/swagger/{any:path}",swagger.CustomWrapHandler(config,swaggerFiles.Handler))
+	app.Get("/swagger/{any:path}", swagger.CustomWrapHandler(config, swaggerFiles.Handler))
 
 	testApi := app.Party("/")
 	{

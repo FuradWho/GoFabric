@@ -15,7 +15,7 @@ paths:
     get:
       description: LifeCycleChaincodeTest-操作测试接口
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "connection success" }'
@@ -27,12 +27,12 @@ paths:
             type: json
       summary: 操作测试接口
       tags:
-      - 测试接口
+        - 测试接口
   /Test:
     get:
       description: Test-网络连通性测试
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "connection success" }'
@@ -44,60 +44,60 @@ paths:
             type: json
       summary: 网络连通性测试
       tags:
-      - 测试接口
+        - 测试接口
   /cc/ApproveCC:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: ApproveCC-请求当前组织批准链码
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
-      - description: 链码所在的通道
-        in: formData
-        name: ChannelId
-        required: true
-        type: string
-      - description: 请求排序节点
-        in: formData
-        name: Orderer
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: ChaincodeId
-        required: true
-        type: string
-      - description: 链码包ID
-        in: formData
-        name: PackageId
-        required: true
-        type: string
-      - description: 链码版本
-        in: formData
-        name: Version
-        required: true
-        type: string
-      - description: 链码更新次数
-        in: formData
-        name: Sequence
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
+        - description: 链码所在的通道
+          in: formData
+          name: ChannelId
+          required: true
+          type: string
+        - description: 请求排序节点
+          in: formData
+          name: Orderer
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: ChaincodeId
+          required: true
+          type: string
+        - description: 链码包ID
+          in: formData
+          name: PackageId
+          required: true
+          type: string
+        - description: 链码版本
+          in: formData
+          name: Version
+          required: true
+          type: string
+        - description: 链码更新次数
+          in: formData
+          name: Sequence
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -110,55 +110,55 @@ paths:
             type: json
       summary: 请求当前组织批准链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/CommitCC:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: CommitCC-提交已通过MSP认证的链码
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: user_name
-        required: true
-        type: string
-      - description: 链码所在的组织
-        in: formData
-        name: org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: peer
-        required: true
-        type: string
-      - description: 链码所在的通道
-        in: formData
-        name: channel_id
-        required: true
-        type: string
-      - description: 请求排序节点
-        in: formData
-        name: orderer
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: chaincode_id
-        required: true
-        type: string
-      - description: 链码版本
-        in: formData
-        name: version
-        required: true
-        type: string
-      - description: 链码更新次数
-        in: formData
-        name: sequence
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: user_name
+          required: true
+          type: string
+        - description: 链码所在的组织
+          in: formData
+          name: org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: peer
+          required: true
+          type: string
+        - description: 链码所在的通道
+          in: formData
+          name: channel_id
+          required: true
+          type: string
+        - description: 请求排序节点
+          in: formData
+          name: orderer
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: chaincode_id
+          required: true
+          type: string
+        - description: 链码版本
+          in: formData
+          name: version
+          required: true
+          type: string
+        - description: 链码更新次数
+          in: formData
+          name: sequence
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -170,35 +170,35 @@ paths:
             type: json
       summary: 提交已通过MSP认证的链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/InstallCC:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: InstallCC-安装链码
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 安装链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: ChaincodeId
-        required: true
-        type: string
-      - description: 安装链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 安装链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: ChaincodeId
+          required: true
+          type: string
+        - description: 安装链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -211,45 +211,45 @@ paths:
             type: json
       summary: 安装链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/QueryApprovedCC:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: QueryApprovedCC-查询是否通过当前组织批准链码
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
-      - description: 链码所在的通道
-        in: formData
-        name: ChannelId
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: ChaincodeId
-        required: true
-        type: string
-      - description: 链码更新次数
-        in: formData
-        name: Sequence
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
+        - description: 链码所在的通道
+          in: formData
+          name: ChannelId
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: ChaincodeId
+          required: true
+          type: string
+        - description: 链码更新次数
+          in: formData
+          name: Sequence
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"packageId":""} }'
@@ -262,30 +262,30 @@ paths:
             type: json
       summary: 查询是否通过当前组织批准链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/QueryInstalled:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: QueryInstalled-请求当前节点安装的链码
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"chaincodes":[]}
@@ -299,55 +299,55 @@ paths:
             type: json
       summary: 请求当前节点安装的链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/RequestApproveCCByOther:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: RequestApproveCCByOther-请求其他组织批准链码
       parameters:
-      - description: 链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
-      - description: 链码所在的通道
-        in: formData
-        name: ChannelId
-        required: true
-        type: string
-      - description: 请求排序节点
-        in: formData
-        name: Orderer
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: ChaincodeId
-        required: true
-        type: string
-      - description: 链码包ID
-        in: formData
-        name: PackageId
-        required: true
-        type: string
-      - description: 链码版本
-        in: formData
-        name: Version
-        required: true
-        type: string
-      - description: 链码更新次数
-        in: formData
-        name: Sequence
-        required: true
-        type: string
+        - description: 链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
+        - description: 链码所在的通道
+          in: formData
+          name: ChannelId
+          required: true
+          type: string
+        - description: 请求排序节点
+          in: formData
+          name: Orderer
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: ChaincodeId
+          required: true
+          type: string
+        - description: 链码包ID
+          in: formData
+          name: PackageId
+          required: true
+          type: string
+        - description: 链码版本
+          in: formData
+          name: Version
+          required: true
+          type: string
+        - description: 链码更新次数
+          in: formData
+          name: Sequence
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -360,30 +360,30 @@ paths:
             type: json
       summary: 请求其他组织批准链码
       tags:
-      - 链码操作
+        - 链码操作
   /cc/RequestInstallCCByOther:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: RequestInstallCCByOther-请求其他组织安装链码
       parameters:
-      - description: 链码所在的组织
-        in: formData
-        name: Org
-        required: true
-        type: string
-      - description: 链码所在的节点
-        in: formData
-        name: Peer
-        required: true
-        type: string
-      - description: 链码ID(名称)
-        in: formData
-        name: ChaincodeId
-        required: true
-        type: string
+        - description: 链码所在的组织
+          in: formData
+          name: Org
+          required: true
+          type: string
+        - description: 链码所在的节点
+          in: formData
+          name: Peer
+          required: true
+          type: string
+        - description: 链码ID(名称)
+          in: formData
+          name: ChaincodeId
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -396,35 +396,35 @@ paths:
             type: json
       summary: 请求其他组织安装链码
       tags:
-      - 链码操作
+        - 链码操作
   /channel/CreateChannel:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: CreateChannel-创建通道
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 安装链码所在的组织
-        in: formData
-        name: OrgName
-        required: true
-        type: string
-      - description: 创建通道名称
-        in: formData
-        name: ChannelId
-        required: true
-        type: string
-      - description: 排序节点
-        in: formData
-        name: Orderer
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 安装链码所在的组织
+          in: formData
+          name: OrgName
+          required: true
+          type: string
+        - description: 创建通道名称
+          in: formData
+          name: ChannelId
+          required: true
+          type: string
+        - description: 排序节点
+          in: formData
+          name: Orderer
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"txId":""} }'
@@ -437,12 +437,12 @@ paths:
             type: json
       summary: 创建通道
       tags:
-      - 用户通道操作
+        - 用户通道操作
   /channel/GetNetworkConfig:
     get:
       description: GetNetworkConfig-获取"网络通道组织节点"信息
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {} }'
@@ -455,18 +455,18 @@ paths:
             type: json
       summary: 获取网络信息
       tags:
-      - 网络通道操作
+        - 网络通道操作
   /channel/GetOrgTargetPeers:
     get:
       description: GetOrgTargetPeers-获取组织节点信息
       parameters:
-      - description: 所在组织名
-        in: path
-        name: org
-        required: true
-        type: string
+        - description: 所在组织名
+          in: path
+          name: org
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"peers":[]} }'
@@ -479,30 +479,30 @@ paths:
             type: json
       summary: 获取组织节点信息
       tags:
-      - 网络通道操作
+        - 网络通道操作
   /channel/JoinChannel:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: JoinChannel-加入当前通道
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 安装链码所在的组织
-        in: formData
-        name: OrgName
-        required: true
-        type: string
-      - description: 创建通道名称
-        in: formData
-        name: ChannelId
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 安装链码所在的组织
+          in: formData
+          name: OrgName
+          required: true
+          type: string
+        - description: 创建通道名称
+          in: formData
+          name: ChannelId
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": {"success to join
@@ -516,40 +516,40 @@ paths:
             type: json
       summary: 加入当前通道
       tags:
-      - 用户通道操作
+        - 用户通道操作
   /user/CreateUser:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       description: CreateUser-创建用户
       parameters:
-      - description: 所在组织的用户名
-        in: formData
-        name: UserName
-        required: true
-        type: string
-      - description: 所在组织的用户密码
-        in: formData
-        name: Secret
-        required: true
-        type: string
-      - description: 用户类型
-        in: formData
-        name: UserType
-        required: true
-        type: string
-      - description: 安装链码所在的组织
-        in: formData
-        name: OrgName
-        required: true
-        type: string
-      - description: 所申请组织的CA服务器
-        in: formData
-        name: CaName
-        required: true
-        type: string
+        - description: 所在组织的用户名
+          in: formData
+          name: UserName
+          required: true
+          type: string
+        - description: 所在组织的用户密码
+          in: formData
+          name: Secret
+          required: true
+          type: string
+        - description: 用户类型
+          in: formData
+          name: UserType
+          required: true
+          type: string
+        - description: 安装链码所在的组织
+          in: formData
+          name: OrgName
+          required: true
+          type: string
+        - description: 所申请组织的CA服务器
+          in: formData
+          name: CaName
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: '{ "code": 200, "msg": "success","data": { "PriFile": priFile,
@@ -562,5 +562,5 @@ paths:
             type: json
       summary: 创建用户
       tags:
-      - 用户通道操作
+        - 用户通道操作
 swagger: "2.0"

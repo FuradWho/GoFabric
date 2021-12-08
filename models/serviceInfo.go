@@ -23,7 +23,7 @@ type CreateChannelInfo struct {
 	Org       string `json:"org" validate:"required,gt=0"`
 	UserName  string `json:"user_name" validate:"required,gt=0"`
 	ChannelId string `json:"channel_id" validate:"required,gt=0"`
-	Orderer string `json:"orderer" validate:"required,gt=0"`
+	Orderer   string `json:"orderer" validate:"required,gt=0"`
 }
 
 type JoinChannelInfo struct {
@@ -54,7 +54,6 @@ type QueryApprovedCCInfo struct {
 	Sequence    string `json:"sequence" validate:"required,gt=0"`
 }
 
-
 type ApproveCCInfo struct {
 	PackageId   string `json:"package_id" validate:"required,gt=0"`
 	ChaincodeId string `json:"chaincode_id" validate:"required,gt=0"`
@@ -81,7 +80,6 @@ type CheckCCCommitReadinessInfo struct {
 	Sequence string `json:"sequence" validate:"required,gt=0"`
 }
 
-
 type CommitCCInfo struct {
 	// PackageId   string `json:"package_id" validate:"required,gt=0"`
 	ChaincodeId string `json:"chaincode_id" validate:"required,gt=0"`
@@ -107,7 +105,6 @@ type RequestApproveCCByOtherInfo struct {
 	Orderer   string `json:"orderer" validate:"required,gt=0"`
 	Sequence  string `json:"sequence" validate:"required,gt=0"`
 }
-
 
 type RequestInstallCCByOtherInfo struct {
 
@@ -136,7 +133,6 @@ type QueryInstalledInfo struct {
 	//Orderer   string `json:"orderer" validate:"required,gt=0"`
 	//Sequence  string `json:"sequence" validate:"required,gt=0"`
 }
-
 
 type InstallCCInfo struct {
 

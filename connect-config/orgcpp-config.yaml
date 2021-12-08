@@ -10,9 +10,9 @@ client:
   cryptoconfig:
     path: /usr/local/hyper/test5/crypto-config
   # 某些SDK支持插件化的KV数据库，通过该属性实现
-#  credentialStore:
-#    # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
-#    path: "/tmp/examplestore"
+  #  credentialStore:
+  #    # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
+  #    path: "/tmp/examplestore"
   credentialStore:
     path: "/tmp/test5/channel-store"
     cryptoStore:
@@ -172,13 +172,13 @@ entitymatchers:
 certificateAuthorities:
   ca-org1:
     url: http://0.0.0.0:7054
-#    tlsCACerts:
-#      path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
-#      client:
-#        key:
-#          path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/priv_sk
-#        cert:
-#          path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+    #    tlsCACerts:
+    #      path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+    #      client:
+    #        key:
+    #          path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/priv_sk
+    #        cert:
+    #          path: /usr/local/hyper/test5/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
 
     registrar:
       enrollId: ca-org1-admin

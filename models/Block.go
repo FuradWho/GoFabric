@@ -33,8 +33,8 @@ type TransactionAction struct {
 }
 
 type BlockMainInfo struct {
-	BlockNum     		uint64   `json:"blockNum"` 			// the number of blocks
-	TransactionNum     	uint64   `json:"transactionNum"` 	// the number of transactions
-	ChaincodeNum     	uint64   `json:"chaincodeNum"` 		// the number of chaincodes
-	NodeNum     		uint64   `json:"nodeNum"` 			// the number of nodes
+	BlockNum       uint64 `json:"blockNum"`       // the number of blocks
+	TransactionNum uint64 `json:"transactionNum"` // the number of transactions
+	ChaincodeNum   uint64 `json:"chaincodeNum"`   // the number of chain-codes
+	NodeNum        uint64 `json:"nodeNum"`        // the number of nodes
 }

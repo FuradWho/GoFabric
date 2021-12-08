@@ -6,11 +6,11 @@ var logger = logrus.New()
 
 type Fields logrus.Fields
 
-func SetLogLevel(level logrus.Level)  {
+func SetLogLevel(level logrus.Level) {
 	logger.SetLevel(level)
 }
 
-func SetLogFormatter(formatter logrus.Formatter)  {
+func SetLogFormatter(formatter logrus.Formatter) {
 	logger.Formatter = formatter
 }
 
@@ -21,6 +21,7 @@ func Debug(args ...interface{}) {
 		entry.Debug(args)
 	}
 }
+
 // 带有field的Debug
 func DebugWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.DebugLevel {
@@ -28,6 +29,7 @@ func DebugWithFields(l interface{}, f Fields) {
 		entry.Debug(l)
 	}
 }
+
 // Info
 func Info(args ...interface{}) {
 	if logger.Level >= logrus.InfoLevel {
@@ -35,6 +37,7 @@ func Info(args ...interface{}) {
 		entry.Info(args...)
 	}
 }
+
 // 带有field的Info
 func InfoWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.InfoLevel {
@@ -42,6 +45,7 @@ func InfoWithFields(l interface{}, f Fields) {
 		entry.Info(l)
 	}
 }
+
 // Warn
 func Warn(args ...interface{}) {
 	if logger.Level >= logrus.WarnLevel {
@@ -49,6 +53,7 @@ func Warn(args ...interface{}) {
 		entry.Warn(args...)
 	}
 }
+
 // 带有Field的Warn
 func WarnWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.WarnLevel {
@@ -56,6 +61,7 @@ func WarnWithFields(l interface{}, f Fields) {
 		entry.Warn(l)
 	}
 }
+
 // Error
 func Error(args ...interface{}) {
 	if logger.Level >= logrus.ErrorLevel {
@@ -63,6 +69,7 @@ func Error(args ...interface{}) {
 		entry.Error(args...)
 	}
 }
+
 // 带有Fields的Error
 func ErrorWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.ErrorLevel {
@@ -70,6 +77,7 @@ func ErrorWithFields(l interface{}, f Fields) {
 		entry.Error(l)
 	}
 }
+
 // Fatal
 func Fatal(args ...interface{}) {
 	if logger.Level >= logrus.FatalLevel {
@@ -77,6 +85,7 @@ func Fatal(args ...interface{}) {
 		entry.Fatal(args...)
 	}
 }
+
 // 带有Field的Fatal
 func FatalWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.FatalLevel {
@@ -84,6 +93,7 @@ func FatalWithFields(l interface{}, f Fields) {
 		entry.Fatal(l)
 	}
 }
+
 // Panic
 func Panic(args ...interface{}) {
 	if logger.Level >= logrus.PanicLevel {
@@ -91,6 +101,7 @@ func Panic(args ...interface{}) {
 		entry.Panic(args...)
 	}
 }
+
 // 带有Field的Panic
 func PanicWithFields(l interface{}, f Fields) {
 	if logger.Level >= logrus.PanicLevel {

@@ -29,8 +29,6 @@ var log = logrus.New()
 var orgs = []string{"org1", "org2"}
 var validate = validator.New()
 
-
-
 func NewFabricClient() {
 
 	connectConfig, _ := ioutil.ReadFile(connectConfigDir)
@@ -50,7 +48,7 @@ func NewFabricClient() {
 // @Success 200 {json} json "{ "code": 200, "msg": "connection success" }"
 // @Failure 400 {json} json "{ " " }"
 // @Router /Test [get]
-func Test(ctx context.Context){
+func Test(ctx context.Context) {
 	ctx.JSON(models.SuccessMsg("connection success"))
 }
 
@@ -94,7 +92,7 @@ func CreateUser(context context.Context) {
 	err := validate.Struct(user)
 	if err != nil {
 		log.Errorln(err)
-		context.JSON(models.FailedData("Field does not match",err))
+		context.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -166,7 +164,7 @@ func CreateChannel(context context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		context.JSON(models.FailedData("Field does not match",err))
+		context.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -178,7 +176,7 @@ func CreateChannel(context context.Context) {
 		return
 	}
 
-	txId, err := fabricClient.CreateChannel(info.Org, info.UserName, info.ChannelId,info.Orderer)
+	txId, err := fabricClient.CreateChannel(info.Org, info.UserName, info.ChannelId, info.Orderer)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to create channel"))
 		return
@@ -189,7 +187,6 @@ func CreateChannel(context context.Context) {
 	}))
 
 }
-
 
 // JoinChannel
 // @Summary　加入当前通道
@@ -217,7 +214,7 @@ func JoinChannel(context context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		context.JSON(models.FailedData("Field does not match",err))
+		context.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -290,7 +287,7 @@ func InstallCC(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -361,7 +358,7 @@ func QueryInstalled(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -416,7 +413,7 @@ func ApproveCC(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -489,7 +486,7 @@ func QueryApprovedCC(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -546,7 +543,7 @@ func CheckCCCommitReadiness(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -616,7 +613,7 @@ func RequestInstallCCByOther(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -694,7 +691,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -751,7 +748,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to CommitCC ","data": "" }"
 // @Router /cc/CommitCC [post]
-func CommitCC(ctx context.Context){
+func CommitCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
@@ -769,7 +766,7 @@ func CommitCC(ctx context.Context){
 	err := validate.Struct(info)
 	if err != nil {
 		log.Errorln(err)
-		ctx.JSON(models.FailedData("Field does not match",err))
+		ctx.JSON(models.FailedData("Field does not match", err))
 		return
 	}
 
@@ -799,7 +796,7 @@ func CommitCC(ctx context.Context){
 	var lck sync.Mutex
 	lck.Lock()
 
-	txId , err := fabricClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId,info.Orderer,info.Version,sequence)
+	txId, err := fabricClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Orderer, info.Version, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to CommitCC "))
 		return
@@ -843,6 +840,7 @@ func GetOrgTargetPeers(ctx context.Context) {
 	}))
 
 }
+
 // GetNetworkConfig
 // @Summary 获取网络信息
 // @Description GetNetworkConfig-获取"网络通道组织节点"信息
@@ -953,9 +951,8 @@ func LifeCycleChaincodeTest(ctx context.Context) {
 
 	//fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 
-	fabricClient.QueryConfigBlockFromOrder("Admin","org1","mychannel","orderer.example.com")
+	fabricClient.QueryConfigBlockFromOrder("Admin", "org1", "mychannel", "orderer.example.com")
 }
-
 
 func zipFiles(filename string, files []string) error {
 	newZipFile, err := os.Create(filename)
@@ -1008,7 +1005,7 @@ func zipFiles(filename string, files []string) error {
 	return nil
 }
 
-func AuthenticateUser(ctx context.Context)  {
+func AuthenticateUser(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -1016,4 +1013,3 @@ func AuthenticateUser(ctx context.Context)  {
 	fabricClient.AuthenticateUser("org1")
 
 }
-
