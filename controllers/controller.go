@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"gofabric/pkg/baas"
-	"gofabric/pkg/explore"
+	"gofabric/service/baas"
+	"gofabric/service/explore"
 
 	"github.com/iris-contrib/swagger/v12"
 	"github.com/iris-contrib/swagger/v12/swaggerFiles"
@@ -44,60 +44,69 @@ func (i *IrisClient) StartIris(baasService *baas.BaasService, exploreService *ex
 
 	app.Get("/swagger/{any:path}", swagger.CustomWrapHandler(config, swaggerFiles.Handler))
 
-	testApi := app.Party("/")
+	baasTestApi := app.Party("/")
 	{
-		testApi.Get("/test", i.baasService.Test)
-		testApi.Get("/LifeCycleChaincodeTest", i.baasService.LifeCycleChaincodeTest)
-		testApi.Get("/AuthenticateUser", i.baasService.AuthenticateUser)
+		baasTestApi.Get("/bassTest", i.baasService.Test)
+		baasTestApi.Get("/LifeCycleChaincodeTest", i.baasService.LifeCycleChaincodeTest)
+		baasTestApi.Get("/AuthenticateUser", i.baasService.AuthenticateUser)
 
 	}
 
 	// users API operate
-	usersApi := app.Party("/user")
+	baasUsersApi := app.Party("/baasUser")
 	{
-		usersApi.Post("/CreateUser", i.baasService.CreateUser)
+		baasUsersApi.Post("/baasCreateUser", i.baasService.CreateUser)
 	}
 
-	channelApi := app.Party("/channel")
+	baasChannelApi := app.Party("/baasChannel")
 	{
-		channelApi.Post("/CreateChannel", i.baasService.CreateChannel)
-		channelApi.Post("/JoinChannel", i.baasService.JoinChannel)
-		channelApi.Get("/GetOrgTargetPeers", i.baasService.GetOrgTargetPeers)
-		channelApi.Get("/GetNetworkConfig", i.baasService.GetNetworkConfig)
-		channelApi.Get("/QueryChannelInfo", i.exploreService.QueryChannelInfo)
-
-	}
-
-	ccApi := app.Party("/cc")
-	{
-		ccApi.Post("/CreateCC", i.baasService.CreateCC)
-		ccApi.Post("/InstallCC", i.baasService.InstallCC)
-		ccApi.Post("/QueryInstalled", i.baasService.QueryInstalled)
-		ccApi.Post("/ApproveCC", i.baasService.ApproveCC)
-		ccApi.Post("/QueryApprovedCC", i.baasService.QueryApprovedCC)
-		ccApi.Post("/CheckCCCommitReadiness", i.baasService.CheckCCCommitReadiness)
-		ccApi.Post("/RequestInstallCCByOther", i.baasService.RequestInstallCCByOther)
-		ccApi.Post("/RequestApproveCCByOther", i.baasService.RequestApproveCCByOther)
-		ccApi.Post("/CommitCC", i.baasService.CommitCC)
-		ccApi.Get("/QueryInstalledCC", i.exploreService.QueryInstalledCC)
-		ccApi.Post("/InvokeInfoByChaincode", i.exploreService.InvokeInfoByChaincode)
-		ccApi.Get("/QueryInfoByChaincode", i.exploreService.QueryInfoByChaincode)
-	}
-
-	blocksApi := app.Party("/blocks")
-	{
-		blocksApi.Get("/QueryLastesBlocksInfo", i.exploreService.GetLastesBlocksInfo)
-		blocksApi.Get("/QueryBlockByBlockNum", i.exploreService.QueryBlockByBlockNum)
-		blocksApi.Get("/QueryAllBlocksInfo", i.exploreService.QueryAllBlocksInfo)
-		blocksApi.Get("/QueryBlockInfoByHash", i.exploreService.QueryBlockInfoByHash)
-		blocksApi.Get("/QueryBlockMainInfo", i.exploreService.QueryBlockMainInfo)
+		baasChannelApi.Post("/baasCreateChannel", i.baasService.CreateChannel)
+		baasChannelApi.Post("/baasJoinChannel", i.baasService.JoinChannel)
+		baasChannelApi.Get("/baasGetOrgTargetPeers", i.baasService.GetOrgTargetPeers)
+		baasChannelApi.Get("/baasGetNetworkConfig", i.baasService.GetNetworkConfig)
 
 	}
 
-	txsApi := app.Party("/txs")
+	exploreChannelApi := app.Party("/exploreChannel")
 	{
-		txsApi.Get("/QueryTxByTxId", i.exploreService.QueryTxByTxId)
-		txsApi.Get("/QueryTxByTxIdJsonStr", i.exploreService.QueryTxByTxIdJsonStr)
+		exploreChannelApi.Get("/exploreQueryChannelInfo", i.exploreService.QueryChannelInfo)
+	}
+
+	baasCcApi := app.Party("/baasCc")
+	{
+		baasCcApi.Post("/baasCreateCC", i.baasService.CreateCC)
+		baasCcApi.Post("/baasInstallCC", i.baasService.InstallCC)
+		baasCcApi.Post("/baasQueryInstalled", i.baasService.QueryInstalled)
+		baasCcApi.Post("/baasApproveCC", i.baasService.ApproveCC)
+		baasCcApi.Post("/baasQueryApprovedCC", i.baasService.QueryApprovedCC)
+		baasCcApi.Post("/baasCheckCCCommitReadiness", i.baasService.CheckCCCommitReadiness)
+		baasCcApi.Post("/baasRequestInstallCCByOther", i.baasService.RequestInstallCCByOther)
+		baasCcApi.Post("/baasRequestApproveCCByOther", i.baasService.RequestApproveCCByOther)
+		baasCcApi.Post("/baasCommitCC", i.baasService.CommitCC)
+
+	}
+
+	exploreCcApi := app.Party("/exploreCc")
+	{
+		exploreCcApi.Get("/exploreQueryInstalledCC", i.exploreService.QueryInstalledCC)
+		exploreCcApi.Post("/exploreInvokeInfoByChaincode", i.exploreService.InvokeInfoByChaincode)
+		exploreCcApi.Get("/exploreQueryInfoByChaincode", i.exploreService.QueryInfoByChaincode)
+	}
+
+	exploreBlocksApi := app.Party("/exploreBlocks")
+	{
+		exploreBlocksApi.Get("/exploreQueryLastesBlocksInfo", i.exploreService.GetLastesBlocksInfo)
+		exploreBlocksApi.Get("/exploreQueryBlockByBlockNum", i.exploreService.QueryBlockByBlockNum)
+		exploreBlocksApi.Get("/exploreQueryAllBlocksInfo", i.exploreService.QueryAllBlocksInfo)
+		exploreBlocksApi.Get("/exploreQueryBlockInfoByHash", i.exploreService.QueryBlockInfoByHash)
+		exploreBlocksApi.Get("/exploreQueryBlockMainInfo", i.exploreService.QueryBlockMainInfo)
+
+	}
+
+	exploreTxsApi := app.Party("/exploreTxs")
+	{
+		exploreTxsApi.Get("/exploreQueryTxByTxId", i.exploreService.QueryTxByTxId)
+		exploreTxsApi.Get("/exploreQueryTxByTxIdJsonStr", i.exploreService.QueryTxByTxIdJsonStr)
 	}
 
 	app.Listen(":9099")

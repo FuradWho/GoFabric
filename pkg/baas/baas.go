@@ -25,7 +25,7 @@ import (
 )
 
 type BaasClient struct {
-	*common.Foo
+	common.Foo
 }
 
 func (b *BaasClient) CreateUser(userName string, secret string, userType string, orgName string, caName string) (priFile string, pubFile string, err error) {

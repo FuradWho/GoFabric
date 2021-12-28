@@ -25,7 +25,7 @@ import (
 )
 
 type ExploreClient struct {
-	*com.Foo
+	com.Foo
 }
 
 // QueryInstalledCC Query installed chaincode

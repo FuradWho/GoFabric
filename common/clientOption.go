@@ -35,17 +35,17 @@ type Option struct {
 	GoPath        string // GOPATH路径
 
 	Ctx            contextApi.ClientProvider
-	MainSDK        *fabsdk.FabricSDK
-	LedgerClient   *ledger.Client
-	ChannelClient  *channel.Client
-	ResMgmtClient  *resmgmt.Client
-	ResMgmtClients map[string]*resmgmt.Client
+	MainSDK        fabsdk.FabricSDK
+	LedgerClient   ledger.Client
+	ChannelClient  channel.Client
+	ResMgmtClient  resmgmt.Client
+	ResMgmtClients map[string]resmgmt.Client
 	Retry          resmgmt.RequestOption
 }
 
 type ModOption func(option *Option)
 
-func NewFabricOption(modOption ModOption) (*Foo, error) {
+func NewFabricOption(modOption ModOption) (Foo, error) {
 	log.Infoln("init the option.")
 
 	// load the local config
@@ -67,23 +67,23 @@ func NewFabricOption(modOption ModOption) (*Foo, error) {
 	// init the fab sdk
 	sdk, err := fabsdk.New(config.FromRaw(option.ConnectionFile, "yaml"))
 	if err != nil {
-		return nil, err
+		return Foo{}, err
 	}
-	option.MainSDK = sdk
+	option.MainSDK = *sdk
 
 	option.Ctx = option.MainSDK.Context()
 
 	// init the resmgmt sdk for orgs
-	resMgmtClients := make(map[string]*resmgmt.Client)
+	resMgmtClients := make(map[string]resmgmt.Client)
 	for _, v := range option.Orgs {
 		resMgmtClient, err := resmgmt.New(sdk.Context(fabsdk.WithUser(option.OrgUser), fabsdk.WithOrg(v)))
 		if err != nil {
-			return nil, err
+			return Foo{}, err
 		}
-		resMgmtClients[v] = resMgmtClient
+		resMgmtClients[v] = *resMgmtClient
 
 		// rand one org for the resMgmtClient to be as the explore client
-		option.ResMgmtClient = resMgmtClient
+		option.ResMgmtClient = *resMgmtClient
 	}
 	option.ResMgmtClients = resMgmtClients
 
@@ -92,22 +92,22 @@ func NewFabricOption(modOption ModOption) (*Foo, error) {
 	// init the ledger client
 	ledgerClient, err := ledger.New(channelContext)
 	if err != nil {
-		return nil, err
+		return Foo{}, err
 	}
-	option.LedgerClient = ledgerClient
+	option.LedgerClient = *ledgerClient
 
 	// init the channel client
 	channelClient, err := channel.New(channelContext)
 	if err != nil {
-		return nil, err
+		return Foo{}, err
 	}
-	option.ChannelClient = channelClient
+	option.ChannelClient = *channelClient
 	// init the retry
 	option.Retry = resmgmt.WithRetry(retry.DefaultResMgmtOpts)
 
 	modOption(&option)
 
-	return &Foo{
+	return Foo{
 		Option: option,
 	}, nil
 }

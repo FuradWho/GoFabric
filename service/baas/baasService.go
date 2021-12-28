@@ -8,6 +8,7 @@ import (
 	"github.com/kataras/iris/v12/context"
 	log "github.com/sirupsen/logrus"
 	"gofabric/models"
+	"gofabric/pkg/baas"
 	"io"
 	"os"
 	"strconv"
@@ -17,10 +18,10 @@ import (
 var validate = validator.New()
 
 type BaasService struct {
-	baasClient *BaasClient
+	baasClient *baas.BaasClient
 }
 
-func (b *BaasService) InitBaasService(baas *BaasClient) {
+func (b *BaasService) InitBaasService(baas *baas.BaasClient) {
 	b.baasClient = baas
 }
 

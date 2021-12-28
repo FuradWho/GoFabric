@@ -4,14 +4,15 @@ import (
 	"encoding/hex"
 	"github.com/kataras/iris/v12/context"
 	log "github.com/sirupsen/logrus"
+	"gofabric/pkg/explore"
 	"strconv"
 )
 
 type ExploreService struct {
-	exploreClient *ExploreClient
+	exploreClient *explore.ExploreClient
 }
 
-func (e *ExploreService) InitExploreService(client *ExploreClient) {
+func (e *ExploreService) InitExploreService(client *explore.ExploreClient) {
 	e.exploreClient = client
 }
 
