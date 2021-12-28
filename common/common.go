@@ -5,6 +5,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
+	contextApi "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ type Option struct {
 	ChaincodePath string //链码路径
 	GoPath        string // GOPATH路径
 
+	Ctx            contextApi.ClientProvider
 	MainSDK        *fabsdk.FabricSDK
 	LedgerClient   *ledger.Client
 	ChannelClient  *channel.Client
@@ -68,6 +70,8 @@ func NewFabricOption(modOption ModOption) (*Foo, error) {
 		return nil, err
 	}
 	option.MainSDK = sdk
+
+	option.Ctx = option.MainSDK.Context()
 
 	// init the resmgmt sdk for orgs
 	resMgmtClients := make(map[string]*resmgmt.Client)

@@ -30,8 +30,7 @@ type BaasClient struct {
 
 func (b *BaasClient) CreateUser(userName string, secret string, userType string, orgName string, caName string) (priFile string, pubFile string, err error) {
 
-	ctx := b.Option.MainSDK.Context()
-	mspClient, err := mspclient.New(ctx, mspclient.WithOrg(orgName))
+	mspClient, err := mspclient.New(b.Option.Ctx, mspclient.WithOrg(orgName))
 	if err != nil {
 		return "", "", err
 	}
@@ -132,8 +131,7 @@ func (b *BaasClient) CreateUser(userName string, secret string, userType string,
 
 func (b *BaasClient) AuthenticateUser(orgName string) {
 
-	ctx := b.Option.MainSDK.Context()
-	mspClient, err := mspclient.New(ctx, mspclient.WithOrg(orgName))
+	mspClient, err := mspclient.New(b.Option.Ctx, mspclient.WithOrg(orgName))
 	if err != nil {
 		log.Errorf("Failed to create msp client: %s\n", err)
 		return
@@ -248,7 +246,7 @@ func (b *BaasClient) UpdateChannel(anchorsTx []string) error {
 
 	for org, c := range b.Option.ResMgmtClients {
 
-		mspClient, err := mspclient.New(b.Option.MainSDK.Context(), mspclient.WithOrg(org))
+		mspClient, err := mspclient.New(b.Option.Ctx, mspclient.WithOrg(org))
 		if err != nil {
 			log.Printf("Failed to UpdateChannel : %s \n", err)
 			return err
@@ -276,7 +274,7 @@ func (b *BaasClient) UpdateChannel(anchorsTx []string) error {
 
 func (b *BaasClient) JoinChannel(channelId, user, org string) error {
 
-	mspClient, err := mspclient.New(b.Option.MainSDK.Context(), mspclient.WithOrg(org))
+	mspClient, err := mspclient.New(b.Option.Ctx, mspclient.WithOrg(org))
 	if err != nil {
 		log.Errorf("Failed to new mspClient : %s \n", err)
 		return err
