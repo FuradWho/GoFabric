@@ -2,12 +2,14 @@ package services
 
 import (
 	"archive/zip"
+	"encoding/hex"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-playground/validator/v10"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/kataras/iris/v12/context"
 	"github.com/sirupsen/logrus"
+	"gofabric/common"
 	"gofabric/models"
 	"io"
 	"io/ioutil"
@@ -951,7 +953,152 @@ func LifeCycleChaincodeTest(ctx context.Context) {
 
 	//fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 
-	fabricClient.QueryConfigBlockFromOrder("Admin", "org1", "mychannel", "orderer.example.com")
+	order, err := fabricClient.QueryConfigBlockFromOrder("Admin", "Ordererorg", "channel", "orderer.example.com")
+	if err != nil {
+		return
+	}
+
+	ctx.JSON(models.SuccessData(order))
+}
+
+func QueryConfigBlock(ctx context.Context) {
+
+}
+
+func GetLastesBlocksInfo(context context.Context) {
+	blocks, err := common.QueryLastesBlocksInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(blocks)
+}
+
+func QueryAllBlocksInfo(context context.Context) {
+	blocks, err := common.QueryAllBlocksInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(blocks)
+}
+
+func QueryTxByTxId(context context.Context) {
+
+	txId := context.URLParam("txId")
+	if txId == "" {
+		context.JSON("fail")
+	} else {
+		transactions, err := common.QueryTxByTxId(txId)
+		if err != nil {
+			log.Println(err)
+		}
+
+		context.JSON(transactions)
+	}
+}
+
+func QueryTxByTxIdJsonStr(context context.Context) {
+
+	txId := context.URLParam("txId")
+	if txId == "" {
+		context.JSON("fail")
+	} else {
+		transactions, err := common.QueryTxByTxId(txId)
+		if err != nil {
+			log.Println(err)
+		}
+
+		context.JSON(transactions)
+	}
+}
+
+func QueryBlockByBlockNum(context context.Context) {
+	blockNum := context.URLParam("blockNum")
+	if blockNum == "" {
+		context.JSON("fail")
+	} else {
+
+		num, _ := strconv.ParseInt(blockNum, 10, 64)
+		transactions, err := common.QueryBlockByBlockNum(num)
+		if err != nil {
+			log.Println(err)
+		}
+
+		context.JSON(transactions)
+	}
+}
+
+func QueryBlockInfoByHash(context context.Context) {
+	blockHash := context.URLParam("blockHash")
+	if blockHash == "" {
+		context.JSON("fail")
+	} else {
+		byteBlockHash, err := hex.DecodeString(blockHash)
+		if err != nil {
+			log.Println(err)
+		}
+		blockInfo, err := common.QueryBlockInfoByHash(byteBlockHash)
+		if err != nil {
+			log.Println(err)
+		}
+
+		context.JSON(blockInfo)
+	}
+}
+
+func QueryBlockMainInfo(context context.Context) {
+	blocks, err := common.QueryBlockMainInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(blocks)
+}
+
+func QueryInstalledCC(context context.Context) {
+
+	chaincodeInfo, err := common.QueryInstalledCC()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(chaincodeInfo)
+}
+
+func QueryChannelInfo(context context.Context) {
+	channelInfo, err := common.QueryChannelInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(channelInfo)
+}
+
+func InvokeInfoByChaincode(context context.Context) {
+
+	data := context.PostValue("data")
+	if data == "" {
+		context.JSON("fail")
+	} else {
+		chaincodeInfo, err := common.InvokeInfoByChaincode(data)
+		if err != nil {
+			log.Println(err)
+		}
+		context.JSON(chaincodeInfo)
+	}
+
+}
+
+func QueryInfoByChaincode(context context.Context) {
+
+	uuid := context.URLParam("uuid")
+
+	if uuid == "" {
+		context.JSON("fail")
+	} else {
+		chaincodeInfo, err := common.QueryInfoByChaincode(uuid)
+		if err != nil {
+			log.Println(err)
+		}
+		context.JSON(chaincodeInfo)
+	}
+
 }
 
 func zipFiles(filename string, files []string) error {

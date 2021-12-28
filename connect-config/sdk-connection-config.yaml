@@ -168,7 +168,7 @@ entitymatchers:
 
   orderer:
     - pattern: (\w*)orderer.example.com(\w*)
-      urlsubstitutionexp: 192.168.175.133:7050
+      urlsubstitutionexp: grpcs://192.168.175.133:7050
       ssltargetoverrideurlsubstitutionexp: orderer.example.com
       mappedhost: orderer.example.com
 

@@ -54,6 +54,7 @@ func StartIris() {
 		channelApi.Post("/JoinChannel", services.JoinChannel)
 		channelApi.Get("/GetOrgTargetPeers", services.GetOrgTargetPeers)
 		channelApi.Get("/GetNetworkConfig", services.GetNetworkConfig)
+		channelApi.Get("/QueryChannelInfo", services.QueryChannelInfo)
 
 	}
 
@@ -68,6 +69,25 @@ func StartIris() {
 		ccApi.Post("/RequestInstallCCByOther", services.RequestInstallCCByOther)
 		ccApi.Post("/RequestApproveCCByOther", services.RequestApproveCCByOther)
 		ccApi.Post("/CommitCC", services.CommitCC)
+		ccApi.Get("/QueryInstalledCC", services.QueryInstalledCC)
+		ccApi.Post("/InvokeInfoByChaincode", services.InvokeInfoByChaincode)
+		ccApi.Get("/QueryInfoByChaincode", services.QueryInfoByChaincode)
+	}
+
+	blocksApi := app.Party("/blocks")
+	{
+		blocksApi.Get("/QueryLastesBlocksInfo", services.GetLastesBlocksInfo)
+		blocksApi.Get("/QueryBlockByBlockNum", services.QueryBlockByBlockNum)
+		blocksApi.Get("/QueryAllBlocksInfo", services.QueryAllBlocksInfo)
+		blocksApi.Get("/QueryBlockInfoByHash", services.QueryBlockInfoByHash)
+		blocksApi.Get("/QueryBlockMainInfo", services.QueryBlockMainInfo)
+
+	}
+
+	txsApi := app.Party("/txs")
+	{
+		txsApi.Get("/QueryTxByTxId", services.QueryTxByTxId)
+		txsApi.Get("/QueryTxByTxIdJsonStr", services.QueryTxByTxIdJsonStr)
 	}
 
 	app.Listen(":9099")

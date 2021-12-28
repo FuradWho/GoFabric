@@ -760,23 +760,44 @@ func (f *FabricClient) QueryLedger() error {
 	return nil
 }
 
-func (f *FabricClient) QueryConfigBlockFromOrder(user, org, channelId, orderer string) error {
+func (f *FabricClient) QueryConfigBlockFromOrder(user, org, channelId, orderer string) ([]byte, error) {
 
 	resmgmtClient, err := resmgmt.New(f.sdk.Context(fabsdk.WithUser(user), fabsdk.WithOrg(org)))
 	if err != nil {
 		log.Errorf("Failed to create channel management client : %s \n", err)
-		return err
+		return nil, err
 	}
 
 	fromOrderer, err := resmgmtClient.QueryConfigFromOrderer(channelId, resmgmt.WithOrdererEndpoint(orderer))
 	if err != nil {
 		log.Errorf("Failed to QueryConfigFromOrderer : %s \n", err)
-		return err
+		return nil, err
 	}
+
+	blockFromOrderer, err := resmgmtClient.QueryConfigBlockFromOrderer(channelId, resmgmt.WithOrdererEndpoint(orderer))
+	if err != nil {
+		log.Errorf("Failed to QueryConfigBlockFromOrderer : %s \n", err)
+		return nil, err
+	}
+	log.Infof("Config Block : %+v \n", blockFromOrderer)
+	//proto, err := EncodeProto(blockFromOrderer)
+	//if err != nil {
+	//	log.Errorf("Failed to EncodeProtor : %s \n", err)
+	//	return nil, err
+	//}
+
 	log.Infof("Config Block : %+v \n", fromOrderer)
-	return nil
+	return nil, nil
 
 }
+
+//func EncodeProto(input *common.Block) ([]byte, error) {
+//	var w = new(bytes.Buffer)
+//	if err := protolator.DeepMarshalJSON(w, input); err != nil {
+//		return nil, errors.New("error encoding output")
+//	}
+//	return w.Bytes(), nil
+//}
 
 //func (f *FabricClient)  InitCC(ccID , user , org ,channelId ,peer string) {
 //	//prepare channel client context using client context
