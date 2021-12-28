@@ -9,10 +9,10 @@ import (
 )
 
 type ExploreService struct {
-	exploreClient *explore.ExploreClient
+	exploreClient explore.ExploreClient
 }
 
-func (e *ExploreService) InitExploreService(client *explore.ExploreClient) {
+func (e *ExploreService) InitExploreService(client explore.ExploreClient) {
 	e.exploreClient = client
 }
 

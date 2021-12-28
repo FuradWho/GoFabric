@@ -18,10 +18,10 @@ import (
 var validate = validator.New()
 
 type BaasService struct {
-	baasClient *baas.BaasClient
+	baasClient baas.BaasClient
 }
 
-func (b *BaasService) InitBaasService(baas *baas.BaasClient) {
+func (b *BaasService) InitBaasService(baas baas.BaasClient) {
 	b.baasClient = baas
 }
 

@@ -21,13 +21,13 @@ func main() {
 
 	baasClient := baas.BaasClient{Foo: newFabricOption}
 	baasService := new(baas2.BaasService)
-	baasService.InitBaasService(&baasClient)
+	baasService.InitBaasService(baasClient)
 
 	exploreClient := explore.ExploreClient{Foo: newFabricOption}
 	exploreService := new(explore2.ExploreService)
-	exploreService.InitExploreService(&exploreClient)
+	exploreService.InitExploreService(exploreClient)
 
 	irisClient := new(controllers.IrisClient)
-	irisClient.StartIris(baasService, exploreService)
+	irisClient.StartIris(*baasService, *exploreService)
 
 }

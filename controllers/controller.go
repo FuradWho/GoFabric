@@ -12,8 +12,8 @@ import (
 )
 
 type IrisClient struct {
-	baasService    *baas.BaasService
-	exploreService *explore.ExploreService
+	baasService    baas.BaasService
+	exploreService explore.ExploreService
 }
 
 // @title GO Fabric 对于Fabric网络的操作
@@ -29,7 +29,7 @@ type IrisClient struct {
 // StartIris
 // @host localhost:9099
 // @BasePath /
-func (i *IrisClient) StartIris(baasService *baas.BaasService, exploreService *explore.ExploreService) {
+func (i *IrisClient) StartIris(baasService baas.BaasService, exploreService explore.ExploreService) {
 
 	i.baasService = baasService
 	i.exploreService = exploreService
