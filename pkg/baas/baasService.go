@@ -1,45 +1,27 @@
-package services
+package baas
 
 import (
 	"archive/zip"
-	"encoding/hex"
 	"github.com/go-playground/validator/v10"
-	_ "github.com/go-playground/validator/v10"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/kataras/iris/v12/context"
-	"github.com/sirupsen/logrus"
-	"gofabric/common"
+	log "github.com/sirupsen/logrus"
 	"gofabric/models"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"sync"
 )
 
-const (
-	channelId = "mychannel"
-	//connectConfigDir = "connect-config/channel-connection.yaml"
-	connectConfigDir = "connect-config/orgcpp-config.yaml"
-	chaincodePath    = "/usr/local/soft/fabric-test5/chaincode/newchaincode/test"
-	Admin            = "Admin"
-)
-
-var fabricClient *models.FabricClient
-var log = logrus.New()
-var orgs = []string{"org1", "org2"}
 var validate = validator.New()
 
-func NewFabricClient() {
+type BaasService struct {
+	baasClient *BaasClient
+}
 
-	connectConfig, _ := ioutil.ReadFile(connectConfigDir)
-	fabricClient = models.NewFabricClient(connectConfig, channelId, orgs)
-	//defer fabricClient.Close()
-	err := fabricClient.Setup()
-	if err != nil {
-		return
-	}
+func (b *BaasService) InitBaasService(baas *BaasClient) {
+	b.baasClient = baas
 }
 
 // Test
@@ -50,7 +32,7 @@ func NewFabricClient() {
 // @Success 200 {json} json "{ "code": 200, "msg": "connection success" }"
 // @Failure 400 {json} json "{ " " }"
 // @Router /Test [get]
-func Test(ctx context.Context) {
+func (b *BaasService) Test(ctx context.Context) {
 	ctx.JSON(models.SuccessMsg("connection success"))
 }
 
@@ -68,7 +50,7 @@ func Test(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": { "PriFile": priFile, "PubFile" : pubFile }}"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Field to CreateUser","data": "" }"
 // @Router /user/CreateUser [post]
-func CreateUser(context context.Context) {
+func (b *BaasService) CreateUser(context context.Context) {
 
 	path := context.Path()
 	log.Infoln(path)
@@ -100,7 +82,7 @@ func CreateUser(context context.Context) {
 
 	log.Infof("CreateUser info : %+v \n", user)
 
-	priFile, pubFile, err := fabricClient.CreateUser(user.UserName, user.Secret, user.UserType, user.OrgName, user.CaName)
+	priFile, pubFile, err := b.baasClient.CreateUser(user.UserName, user.Secret, user.UserType, user.OrgName, user.CaName)
 	if err != nil {
 		if priFile != "" && pubFile != "" {
 
@@ -151,7 +133,7 @@ func CreateUser(context context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to create channel","data": "" }"
 // @Router /channel/CreateChannel [post]
-func CreateChannel(context context.Context) {
+func (b *BaasService) CreateChannel(context context.Context) {
 
 	path := context.Path()
 	log.Infoln(path)
@@ -172,13 +154,13 @@ func CreateChannel(context context.Context) {
 
 	log.Infof("CreateChannel info : %+v \n", info)
 
-	_, err = fabricClient.GetOrgTargetPeers(info.Org)
+	_, err = b.baasClient.GetOrgTargetPeers(info.Org)
 	if err != nil {
 		context.JSON(models.FailedMsg(err.Error()))
 		return
 	}
 
-	txId, err := fabricClient.CreateChannel(info.Org, info.UserName, info.ChannelId, info.Orderer)
+	txId, err := b.baasClient.CreateChannel(info.Org, info.UserName, info.ChannelId, info.Orderer)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to create channel"))
 		return
@@ -202,7 +184,7 @@ func CreateChannel(context context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"success to join channel"} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to join channel","data": "" }"
 // @Router /channel/JoinChannel [post]
-func JoinChannel(context context.Context) {
+func (b *BaasService) JoinChannel(context context.Context) {
 
 	path := context.Path()
 	log.Infoln(path)
@@ -222,7 +204,7 @@ func JoinChannel(context context.Context) {
 
 	log.Infof("JoinChannel info : %+v \n", info)
 
-	err = fabricClient.JoinChannel(info.ChannelId, info.UserName, info.Org)
+	err = b.baasClient.JoinChannel(info.ChannelId, info.UserName, info.Org)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to join channel"))
 		return
@@ -232,7 +214,7 @@ func JoinChannel(context context.Context) {
 
 }
 
-func CreateCC(context context.Context) {
+func (b *BaasService) CreateCC(context context.Context) {
 
 	path := context.Path()
 	log.Infoln(path)
@@ -243,12 +225,12 @@ func CreateCC(context context.Context) {
 		Org:           context.PostValueTrim("org"),
 		Version:       context.PostValueTrim("version"),
 		ChaincodeId:   context.PostValueTrim("chaincode_id"),
-		ChaincodePath: chaincodePath,
+		ChaincodePath: b.baasClient.Option.ChaincodePath,
 	}
 	log.Infof("create chaincode info : %+v \n", info)
 
 	// chaincodeId, chaincodePath, version, org , userName, channelId string
-	txId, err := fabricClient.CreateCC(info.ChaincodeId, info.ChaincodePath, info.Version, info.Org, info.UserName, info.ChannelId)
+	txId, err := b.baasClient.CreateCC(info.ChaincodeId, info.ChaincodePath, info.Version, info.Org, info.UserName, info.ChannelId)
 	if err != nil {
 		context.JSON(models.FailedMsg("Failed to create chaincode"))
 		return
@@ -273,7 +255,7 @@ func CreateCC(context context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "The chaincode has installed ","data": "" }"
 // @Router /cc/InstallCC [post]
-func InstallCC(ctx context.Context) {
+func (b *BaasService) InstallCC(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -282,7 +264,7 @@ func InstallCC(ctx context.Context) {
 		UserName:      ctx.PostValueTrim("user_name"),
 		Org:           ctx.PostValueTrim("org"),
 		ChaincodeId:   ctx.PostValueTrim("chaincode_id"),
-		ChaincodePath: chaincodePath,
+		ChaincodePath: b.baasClient.Option.ChaincodePath,
 		Peer:          ctx.PostValueTrim("peer"),
 	}
 
@@ -295,7 +277,7 @@ func InstallCC(ctx context.Context) {
 
 	log.Infof("InstallCC info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -318,7 +300,7 @@ func InstallCC(ctx context.Context) {
 
 	log.Infoln("locking ....")
 
-	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
+	txId, err := b.baasClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to Install chaincode"))
 		return
@@ -346,7 +328,7 @@ func InstallCC(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"chaincodes":[]} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to QueryInstalled chaincode","data": "" }"
 // @Router /cc/QueryInstalled [post]
-func QueryInstalled(ctx context.Context) {
+func (b *BaasService) QueryInstalled(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -366,7 +348,7 @@ func QueryInstalled(ctx context.Context) {
 
 	log.Infof("QueryInstalled info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -395,7 +377,7 @@ func QueryInstalled(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to approve the chaincode ","data": "" }"
 // @Router /cc/ApproveCC [post]
-func ApproveCC(ctx context.Context) {
+func (b *BaasService) ApproveCC(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -421,7 +403,7 @@ func ApproveCC(ctx context.Context) {
 
 	log.Infof("ApproveCC info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		log.Errorln(err)
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
@@ -444,7 +426,7 @@ func ApproveCC(ctx context.Context) {
 	var lck sync.Mutex
 	lck.Lock()
 
-	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
+	txnID, err := b.baasClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to approve the chaincode "))
 		return
@@ -472,7 +454,7 @@ func ApproveCC(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"packageId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to QueryApprovedCC the chaincode ","data": "" }"
 // @Router /cc/QueryApprovedCC [post]
-func QueryApprovedCC(ctx context.Context) {
+func (b *BaasService) QueryApprovedCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
@@ -494,7 +476,7 @@ func QueryApprovedCC(ctx context.Context) {
 
 	log.Infof("QueryApprovedCC info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -515,7 +497,7 @@ func QueryApprovedCC(ctx context.Context) {
 
 	sequence, _ := strconv.Atoi(info.Sequence)
 
-	packageId, err := fabricClient.QueryApprovedCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
+	packageId, err := b.baasClient.QueryApprovedCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryApprovedCC the chaincode "))
 		return
@@ -527,7 +509,7 @@ func QueryApprovedCC(ctx context.Context) {
 
 }
 
-func CheckCCCommitReadiness(ctx context.Context) {
+func (b *BaasService) CheckCCCommitReadiness(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -553,7 +535,7 @@ func CheckCCCommitReadiness(ctx context.Context) {
 
 	sequence, _ := strconv.Atoi(info.Sequence)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -572,12 +554,12 @@ func CheckCCCommitReadiness(ctx context.Context) {
 		return
 	}
 
-	// func (f *FabricClient) CheckCCCommitReadiness(ccID, version, user, org, channelId, peer string, sequence int) (map[string]bool, error) {
+	// func (f *b.baasClient) CheckCCCommitReadiness(ccID, version, user, org, channelId, peer string, sequence int) (map[string]bool, error) {
 
 	var lck sync.Mutex
 	lck.Lock()
 
-	readiness, err := fabricClient.CheckCCCommitReadiness(info.ChaincodeId, info.Version, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
+	readiness, err := b.baasClient.CheckCCCommitReadiness(info.ChaincodeId, info.Version, info.UserName, info.Org, info.ChannelId, info.Peer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to CheckCCCommitReadiness the chaincode "))
 		return
@@ -599,16 +581,16 @@ func CheckCCCommitReadiness(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to RequestInstallCCByOther ","data": "" }"
 // @Router /cc/RequestInstallCCByOther [post]
-func RequestInstallCCByOther(ctx context.Context) {
+func (b *BaasService) RequestInstallCCByOther(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
 
 	info := models.RequestInstallCCByOtherInfo{
-		UserName:      Admin,
+		UserName:      b.baasClient.Option.OrgUser,
 		Org:           ctx.PostValueTrim("org"),
 		ChaincodeId:   ctx.PostValueTrim("chaincode_id"),
-		ChaincodePath: chaincodePath,
+		ChaincodePath: b.baasClient.Option.ChaincodePath,
 		Peer:          ctx.PostValueTrim("peer"),
 	}
 
@@ -621,7 +603,7 @@ func RequestInstallCCByOther(ctx context.Context) {
 
 	log.Infof("RequestInstallCCByOther info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -643,7 +625,7 @@ func RequestInstallCCByOther(ctx context.Context) {
 	var lck sync.Mutex
 	lck.Lock()
 
-	txId, err := fabricClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
+	txId, err := b.baasClient.InstallCC(info.ChaincodeId, info.ChaincodePath, info.Org, info.UserName, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to RequestInstallCCByOther "))
 		return
@@ -673,14 +655,14 @@ func RequestInstallCCByOther(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to RequestApproveCCByOther the chaincode ","data": "" }"
 // @Router /cc/RequestApproveCCByOther [post]
-func RequestApproveCCByOther(ctx context.Context) {
+func (b *BaasService) RequestApproveCCByOther(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
 
 	info := models.RequestApproveCCByOtherInfo{
 		PackageId:   ctx.PostValueTrim("package_id"),
-		UserName:    Admin,
+		UserName:    b.baasClient.Option.UserName,
 		Org:         ctx.PostValueTrim("org"),
 		Peer:        ctx.PostValueTrim("peer"),
 		ChaincodeId: ctx.PostValueTrim("chaincode_id"),
@@ -699,7 +681,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 
 	log.Infof("RequestApproveCCByOther info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -720,7 +702,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 	sequence, _ := strconv.Atoi(info.Sequence)
 	var lck sync.Mutex
 	lck.Lock()
-	txnID, err := fabricClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
+	txnID, err := b.baasClient.ApproveCC(info.PackageId, info.ChaincodeId, info.Version, info.ChannelId, info.UserName, info.Org, info.Peer, info.Orderer, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to RequestApproveCCByOther the chaincode "))
 		return
@@ -750,7 +732,7 @@ func RequestApproveCCByOther(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"txId":""} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to CommitCC ","data": "" }"
 // @Router /cc/CommitCC [post]
-func CommitCC(ctx context.Context) {
+func (b *BaasService) CommitCC(ctx context.Context) {
 	path := ctx.Path()
 	log.Infoln(path)
 
@@ -774,7 +756,7 @@ func CommitCC(ctx context.Context) {
 
 	log.Infof("RequestApproveCCByOther info : %+v \n", info)
 
-	installed, err := fabricClient.QueryInstalled(info.UserName, info.Org, info.Peer)
+	installed, err := b.baasClient.QueryInstalled(info.UserName, info.Org, info.Peer)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to QueryInstalled chaincode"))
 		return
@@ -798,7 +780,7 @@ func CommitCC(ctx context.Context) {
 	var lck sync.Mutex
 	lck.Lock()
 
-	txId, err := fabricClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Orderer, info.Version, sequence)
+	txId, err := b.baasClient.CommitCC(info.ChaincodeId, info.UserName, info.Org, info.ChannelId, info.Orderer, info.Version, sequence)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to CommitCC "))
 		return
@@ -820,7 +802,7 @@ func CommitCC(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {"peers":[]} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to GetOrgTargetPeers ","data": "" }"
 // @Router /channel/GetOrgTargetPeers [get]
-func GetOrgTargetPeers(ctx context.Context) {
+func (b *BaasService) GetOrgTargetPeers(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
@@ -831,7 +813,7 @@ func GetOrgTargetPeers(ctx context.Context) {
 
 	log.Infof("GetOrgTargetPeers info : %+v \n", info)
 
-	peers, err := fabricClient.GetOrgTargetPeers(info.Org)
+	peers, err := b.baasClient.GetOrgTargetPeers(info.Org)
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to GetOrgTargetPeers"))
 		return
@@ -851,12 +833,12 @@ func GetOrgTargetPeers(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "success","data": {} }"
 // @Failure 400 {json} json "{ "code": 400, "msg": "Failed to GetNetworkConfig ","data": "" }"
 // @Router /channel/GetNetworkConfig [get]
-func GetNetworkConfig(ctx context.Context) {
+func (b *BaasService) GetNetworkConfig(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
 
-	config, err := fabricClient.GetNetworkConfig()
+	config, err := b.baasClient.GetNetworkConfig()
 	if err != nil {
 		ctx.JSON(models.FailedMsg("Failed to GetOrgTargetPeers"))
 		return
@@ -874,20 +856,20 @@ func GetNetworkConfig(ctx context.Context) {
 // @Success 200 {json} json "{ "code": 200, "msg": "connection success" }"
 // @Failure 400 {json} json "{ " " }"
 // @Router /LifeCycleChaincodeTest [get]
-func LifeCycleChaincodeTest(ctx context.Context) {
+func (b *BaasService) LifeCycleChaincodeTest(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
 
 	// chaincodeId, chaincodePath, org , user string
 
-	//txId, err := fabricClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org1","Admin")
+	//txId, err := b.baasClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org1","Admin")
 	//if err != nil {
 	//	return
 	//}
 	//log.Infoln(txId)
 	//
-	//tx2Id, err := fabricClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org2","Admin")
+	//tx2Id, err := b.baasClient.InstallCC("Test3","/usr/local/soft/fabric-test5/chaincode/newchaincode/test","org2","Admin")
 	//if err != nil {
 	//	return
 	//}
@@ -902,58 +884,58 @@ func LifeCycleChaincodeTest(ctx context.Context) {
 
 	// Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80
 
-	//err := fabricClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org1", "Test3", "0", "mychannel", "Admin","peer0.org1.example.com")
+	//err := b.baasClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org1", "Test3", "0", "mychannel", "Admin","peer0.org1.example.com")
 	//if err != nil {
 	//	return
 	//}
 	//
-	//err = fabricClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org2", "Test3", "0", "mychannel", "Admin","peer0.org2.example.com")
+	//err = b.baasClient.ApproveCC("Test3:c11fd6513a390b097694f72dc0a089e27bf633481ae37e4ce9b06cdea3bc5b80", "org2", "Test3", "0", "mychannel", "Admin","peer0.org2.example.com")
 	//if err != nil {
 	//	return
 	//}
 	//
-	//err = fabricClient.QueryInstalled("Admin", "org1")
+	//err = b.baasClient.QueryInstalled("Admin", "org1")
 	//if err != nil {
 	//	return
 	//}
 
-	//err = fabricClient.GetInstalledCCPackage("Admin", "Test0:5d6f5940712a57ee77265c718ec9f25c9683f286d7450338f3e47e1a46fcf52d", "org1")
+	//err = b.baasClient.GetInstalledCCPackage("Admin", "Test0:5d6f5940712a57ee77265c718ec9f25c9683f286d7450338f3e47e1a46fcf52d", "org1")
 	//if err != nil {
 	//	return
 	//}
 	//
 
 	//time.Sleep(time.Duration(10)*time.Second)
-	//err :=  fabricClient.CheckCCCommitReadiness("Test3", "Admin", "org1", "mychannel","peer0.org1.example.com")
+	//err :=  b.baasClient.CheckCCCommitReadiness("Test3", "Admin", "org1", "mychannel","peer0.org1.example.com")
 	//if err != nil {
 	//	return
 	//}
 	//
 	//time.Sleep(time.Duration(5)*time.Second)
 	//
-	//err =  fabricClient.CheckCCCommitReadiness("Test3", "Admin", "org2", "mychannel","peer0.org2.example.com")
+	//err =  b.baasClient.CheckCCCommitReadiness("Test3", "Admin", "org2", "mychannel","peer0.org2.example.com")
 	//if err != nil {
 	//	return
 	//}
 
-	//err := fabricClient.QueryApprovedCC("Test1", "Admin", "org1", "mychannel")
+	//err := b.baasClient.QueryApprovedCC("Test1", "Admin", "org1", "mychannel")
 	//if err != nil {
 	//	return
 	//}
-	//err = fabricClient.CommitCC("Test3", "Admin", "org2", "mychannel", "peer0.org2.example.com")
+	//err = b.baasClient.CommitCC("Test3", "Admin", "org2", "mychannel", "peer0.org2.example.com")
 	//if err != nil {
 	//	return
 	//}
 
 	//
-	//err = fabricClient.CommitCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
+	//err = b.baasClient.CommitCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 	//if err != nil {
 	//	return
 	//}
 
-	//fabricClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
+	//b.baasClient.QueryCommittedCC("Test3", "Admin", "org1", "mychannel", "peer0.org1.example.com")
 
-	order, err := fabricClient.QueryConfigBlockFromOrder("Admin", "Ordererorg", "channel", "orderer.example.com")
+	order, err := b.baasClient.QueryConfigBlockFromOrder("Admin", "Ordererorg", "channel", "orderer.example.com")
 	if err != nil {
 		return
 	}
@@ -962,142 +944,6 @@ func LifeCycleChaincodeTest(ctx context.Context) {
 }
 
 func QueryConfigBlock(ctx context.Context) {
-
-}
-
-func GetLastesBlocksInfo(context context.Context) {
-	blocks, err := common.QueryLastesBlocksInfo()
-	if err != nil {
-		log.Println(err)
-	}
-	context.JSON(blocks)
-}
-
-func QueryAllBlocksInfo(context context.Context) {
-	blocks, err := common.QueryAllBlocksInfo()
-	if err != nil {
-		log.Println(err)
-	}
-	context.JSON(blocks)
-}
-
-func QueryTxByTxId(context context.Context) {
-
-	txId := context.URLParam("txId")
-	if txId == "" {
-		context.JSON("fail")
-	} else {
-		transactions, err := common.QueryTxByTxId(txId)
-		if err != nil {
-			log.Println(err)
-		}
-
-		context.JSON(transactions)
-	}
-}
-
-func QueryTxByTxIdJsonStr(context context.Context) {
-
-	txId := context.URLParam("txId")
-	if txId == "" {
-		context.JSON("fail")
-	} else {
-		transactions, err := common.QueryTxByTxId(txId)
-		if err != nil {
-			log.Println(err)
-		}
-
-		context.JSON(transactions)
-	}
-}
-
-func QueryBlockByBlockNum(context context.Context) {
-	blockNum := context.URLParam("blockNum")
-	if blockNum == "" {
-		context.JSON("fail")
-	} else {
-
-		num, _ := strconv.ParseInt(blockNum, 10, 64)
-		transactions, err := common.QueryBlockByBlockNum(num)
-		if err != nil {
-			log.Println(err)
-		}
-
-		context.JSON(transactions)
-	}
-}
-
-func QueryBlockInfoByHash(context context.Context) {
-	blockHash := context.URLParam("blockHash")
-	if blockHash == "" {
-		context.JSON("fail")
-	} else {
-		byteBlockHash, err := hex.DecodeString(blockHash)
-		if err != nil {
-			log.Println(err)
-		}
-		blockInfo, err := common.QueryBlockInfoByHash(byteBlockHash)
-		if err != nil {
-			log.Println(err)
-		}
-
-		context.JSON(blockInfo)
-	}
-}
-
-func QueryBlockMainInfo(context context.Context) {
-	blocks, err := common.QueryBlockMainInfo()
-	if err != nil {
-		log.Println(err)
-	}
-	context.JSON(blocks)
-}
-
-func QueryInstalledCC(context context.Context) {
-
-	chaincodeInfo, err := common.QueryInstalledCC()
-	if err != nil {
-		log.Println(err)
-	}
-	context.JSON(chaincodeInfo)
-}
-
-func QueryChannelInfo(context context.Context) {
-	channelInfo, err := common.QueryChannelInfo()
-	if err != nil {
-		log.Println(err)
-	}
-	context.JSON(channelInfo)
-}
-
-func InvokeInfoByChaincode(context context.Context) {
-
-	data := context.PostValue("data")
-	if data == "" {
-		context.JSON("fail")
-	} else {
-		chaincodeInfo, err := common.InvokeInfoByChaincode(data)
-		if err != nil {
-			log.Println(err)
-		}
-		context.JSON(chaincodeInfo)
-	}
-
-}
-
-func QueryInfoByChaincode(context context.Context) {
-
-	uuid := context.URLParam("uuid")
-
-	if uuid == "" {
-		context.JSON("fail")
-	} else {
-		chaincodeInfo, err := common.QueryInfoByChaincode(uuid)
-		if err != nil {
-			log.Println(err)
-		}
-		context.JSON(chaincodeInfo)
-	}
 
 }
 
@@ -1152,11 +998,11 @@ func zipFiles(filename string, files []string) error {
 	return nil
 }
 
-func AuthenticateUser(ctx context.Context) {
+func (b *BaasService) AuthenticateUser(ctx context.Context) {
 
 	path := ctx.Path()
 	log.Infoln(path)
 
-	fabricClient.AuthenticateUser("org1")
+	b.baasClient.AuthenticateUser("org1")
 
 }

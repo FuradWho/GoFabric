@@ -1,13 +1,11 @@
 package config
 
 const (
-	OrgGoConfig   = "/home/fabric/ideaProject/GoFabric/connect-config/sdk-connection-config.yaml"
-	OrgCppConfig  = "/usr/local/hyperledger/fabric-explore/client-connections/cliconfigs/orgcpp-config.yaml"
-	OrgGo         = "Org1"
-	OrgCpp        = "OrgCpp"
-	Admin         = "Admin"
-	User          = "User1"
-	ChaincodePath = "github.com/hyperledger/fabric-samples/chaincode/chaincode_example02/go"
-	ChannelID     = "mychannel"
-	ChaincodeID   = "newchaincode_0"
+	Org1             = "Org1"
+	Admin            = "Admin"
+	User             = "User1"
+	ChaincodePath    = "/usr/local/soft/fabric-test5/chaincode/newchaincode/test"
+	ChannelID        = "mychannel"
+	ChaincodeID      = "newchaincode_0"
+	ConnectConfigDir = "configs/connect-config/sdk-connection-config.yaml"
 )

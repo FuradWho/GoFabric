@@ -2,13 +2,19 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"gofabric/services"
+	"gofabric/pkg/baas"
+	"gofabric/pkg/explore"
 
 	"github.com/iris-contrib/swagger/v12"
 	"github.com/iris-contrib/swagger/v12/swaggerFiles"
 
 	_ "gofabric/docs"
 )
+
+type IrisClient struct {
+	baasService    *baas.BaasService
+	exploreService *explore.ExploreService
+}
 
 // @title GO Fabric 对于Fabric网络的操作
 // @version 1.0
@@ -23,9 +29,13 @@ import (
 // StartIris
 // @host localhost:9099
 // @BasePath /
-func StartIris() {
+func (i *IrisClient) StartIris(baasService *baas.BaasService, exploreService *explore.ExploreService) {
+
+	i.baasService = baasService
+	i.exploreService = exploreService
+
 	app := iris.New()
-	app.Use(Cors)
+	app.Use(cors)
 
 	config := &swagger.Config{
 		URL:         "http://33p67e8007.qicp.vip/swagger/doc.json",
@@ -36,58 +46,58 @@ func StartIris() {
 
 	testApi := app.Party("/")
 	{
-		testApi.Get("/test", services.Test)
-		testApi.Get("/LifeCycleChaincodeTest", services.LifeCycleChaincodeTest)
-		testApi.Get("/AuthenticateUser", services.AuthenticateUser)
+		testApi.Get("/test", i.baasService.Test)
+		testApi.Get("/LifeCycleChaincodeTest", i.baasService.LifeCycleChaincodeTest)
+		testApi.Get("/AuthenticateUser", i.baasService.AuthenticateUser)
 
 	}
 
 	// users API operate
 	usersApi := app.Party("/user")
 	{
-		usersApi.Post("/CreateUser", services.CreateUser)
+		usersApi.Post("/CreateUser", i.baasService.CreateUser)
 	}
 
 	channelApi := app.Party("/channel")
 	{
-		channelApi.Post("/CreateChannel", services.CreateChannel)
-		channelApi.Post("/JoinChannel", services.JoinChannel)
-		channelApi.Get("/GetOrgTargetPeers", services.GetOrgTargetPeers)
-		channelApi.Get("/GetNetworkConfig", services.GetNetworkConfig)
-		channelApi.Get("/QueryChannelInfo", services.QueryChannelInfo)
+		channelApi.Post("/CreateChannel", i.baasService.CreateChannel)
+		channelApi.Post("/JoinChannel", i.baasService.JoinChannel)
+		channelApi.Get("/GetOrgTargetPeers", i.baasService.GetOrgTargetPeers)
+		channelApi.Get("/GetNetworkConfig", i.baasService.GetNetworkConfig)
+		channelApi.Get("/QueryChannelInfo", i.exploreService.QueryChannelInfo)
 
 	}
 
 	ccApi := app.Party("/cc")
 	{
-		ccApi.Post("/CreateCC", services.CreateCC)
-		ccApi.Post("/InstallCC", services.InstallCC)
-		ccApi.Post("/QueryInstalled", services.QueryInstalled)
-		ccApi.Post("/ApproveCC", services.ApproveCC)
-		ccApi.Post("/QueryApprovedCC", services.QueryApprovedCC)
-		ccApi.Post("/CheckCCCommitReadiness", services.CheckCCCommitReadiness)
-		ccApi.Post("/RequestInstallCCByOther", services.RequestInstallCCByOther)
-		ccApi.Post("/RequestApproveCCByOther", services.RequestApproveCCByOther)
-		ccApi.Post("/CommitCC", services.CommitCC)
-		ccApi.Get("/QueryInstalledCC", services.QueryInstalledCC)
-		ccApi.Post("/InvokeInfoByChaincode", services.InvokeInfoByChaincode)
-		ccApi.Get("/QueryInfoByChaincode", services.QueryInfoByChaincode)
+		ccApi.Post("/CreateCC", i.baasService.CreateCC)
+		ccApi.Post("/InstallCC", i.baasService.InstallCC)
+		ccApi.Post("/QueryInstalled", i.baasService.QueryInstalled)
+		ccApi.Post("/ApproveCC", i.baasService.ApproveCC)
+		ccApi.Post("/QueryApprovedCC", i.baasService.QueryApprovedCC)
+		ccApi.Post("/CheckCCCommitReadiness", i.baasService.CheckCCCommitReadiness)
+		ccApi.Post("/RequestInstallCCByOther", i.baasService.RequestInstallCCByOther)
+		ccApi.Post("/RequestApproveCCByOther", i.baasService.RequestApproveCCByOther)
+		ccApi.Post("/CommitCC", i.baasService.CommitCC)
+		ccApi.Get("/QueryInstalledCC", i.exploreService.QueryInstalledCC)
+		ccApi.Post("/InvokeInfoByChaincode", i.exploreService.InvokeInfoByChaincode)
+		ccApi.Get("/QueryInfoByChaincode", i.exploreService.QueryInfoByChaincode)
 	}
 
 	blocksApi := app.Party("/blocks")
 	{
-		blocksApi.Get("/QueryLastesBlocksInfo", services.GetLastesBlocksInfo)
-		blocksApi.Get("/QueryBlockByBlockNum", services.QueryBlockByBlockNum)
-		blocksApi.Get("/QueryAllBlocksInfo", services.QueryAllBlocksInfo)
-		blocksApi.Get("/QueryBlockInfoByHash", services.QueryBlockInfoByHash)
-		blocksApi.Get("/QueryBlockMainInfo", services.QueryBlockMainInfo)
+		blocksApi.Get("/QueryLastesBlocksInfo", i.exploreService.GetLastesBlocksInfo)
+		blocksApi.Get("/QueryBlockByBlockNum", i.exploreService.QueryBlockByBlockNum)
+		blocksApi.Get("/QueryAllBlocksInfo", i.exploreService.QueryAllBlocksInfo)
+		blocksApi.Get("/QueryBlockInfoByHash", i.exploreService.QueryBlockInfoByHash)
+		blocksApi.Get("/QueryBlockMainInfo", i.exploreService.QueryBlockMainInfo)
 
 	}
 
 	txsApi := app.Party("/txs")
 	{
-		txsApi.Get("/QueryTxByTxId", services.QueryTxByTxId)
-		txsApi.Get("/QueryTxByTxIdJsonStr", services.QueryTxByTxIdJsonStr)
+		txsApi.Get("/QueryTxByTxId", i.exploreService.QueryTxByTxId)
+		txsApi.Get("/QueryTxByTxIdJsonStr", i.exploreService.QueryTxByTxIdJsonStr)
 	}
 
 	app.Listen(":9099")
@@ -95,7 +105,7 @@ func StartIris() {
 }
 
 // Cors Resolve the CORS
-func Cors(ctx iris.Context) {
+func cors(ctx iris.Context) {
 
 	ctx.Header("Access-Control-Allow-Origin", "*")
 	if ctx.Request().Method == "OPTIONS" {
