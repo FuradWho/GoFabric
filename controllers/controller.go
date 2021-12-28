@@ -47,66 +47,66 @@ func (i *IrisClient) StartIris(baasService *baas.BaasService, exploreService *ex
 	baasTestApi := app.Party("/")
 	{
 		baasTestApi.Get("/bassTest", i.baasService.Test)
-		baasTestApi.Get("/LifeCycleChaincodeTest", i.baasService.LifeCycleChaincodeTest)
-		baasTestApi.Get("/AuthenticateUser", i.baasService.AuthenticateUser)
+		baasTestApi.Get("/lifeCycleChaincodeTest", i.baasService.LifeCycleChaincodeTest)
+		baasTestApi.Get("/authenticateUser", i.baasService.AuthenticateUser)
 
 	}
 
 	// users API operate
 	baasUsersApi := app.Party("/baasUser")
 	{
-		baasUsersApi.Post("/baasCreateUser", i.baasService.CreateUser)
+		baasUsersApi.Post("/createUser", i.baasService.CreateUser)
 	}
 
 	baasChannelApi := app.Party("/baasChannel")
 	{
-		baasChannelApi.Post("/baasCreateChannel", i.baasService.CreateChannel)
-		baasChannelApi.Post("/baasJoinChannel", i.baasService.JoinChannel)
-		baasChannelApi.Get("/baasGetOrgTargetPeers", i.baasService.GetOrgTargetPeers)
-		baasChannelApi.Get("/baasGetNetworkConfig", i.baasService.GetNetworkConfig)
+		baasChannelApi.Post("/createChannel", i.baasService.CreateChannel)
+		baasChannelApi.Post("/joinChannel", i.baasService.JoinChannel)
+		baasChannelApi.Get("/getOrgTargetPeers", i.baasService.GetOrgTargetPeers)
+		baasChannelApi.Get("/getNetworkConfig", i.baasService.GetNetworkConfig)
 
 	}
 
 	exploreChannelApi := app.Party("/exploreChannel")
 	{
-		exploreChannelApi.Get("/exploreQueryChannelInfo", i.exploreService.QueryChannelInfo)
+		exploreChannelApi.Get("/queryChannelInfo", i.exploreService.QueryChannelInfo)
 	}
 
 	baasCcApi := app.Party("/baasCc")
 	{
-		baasCcApi.Post("/baasCreateCC", i.baasService.CreateCC)
-		baasCcApi.Post("/baasInstallCC", i.baasService.InstallCC)
-		baasCcApi.Post("/baasQueryInstalled", i.baasService.QueryInstalled)
-		baasCcApi.Post("/baasApproveCC", i.baasService.ApproveCC)
-		baasCcApi.Post("/baasQueryApprovedCC", i.baasService.QueryApprovedCC)
-		baasCcApi.Post("/baasCheckCCCommitReadiness", i.baasService.CheckCCCommitReadiness)
-		baasCcApi.Post("/baasRequestInstallCCByOther", i.baasService.RequestInstallCCByOther)
-		baasCcApi.Post("/baasRequestApproveCCByOther", i.baasService.RequestApproveCCByOther)
-		baasCcApi.Post("/baasCommitCC", i.baasService.CommitCC)
+		baasCcApi.Post("/createCC", i.baasService.CreateCC)
+		baasCcApi.Post("/installCC", i.baasService.InstallCC)
+		baasCcApi.Post("/queryInstalled", i.baasService.QueryInstalled)
+		baasCcApi.Post("/approveCC", i.baasService.ApproveCC)
+		baasCcApi.Post("/queryApprovedCC", i.baasService.QueryApprovedCC)
+		baasCcApi.Post("/checkCCCommitReadiness", i.baasService.CheckCCCommitReadiness)
+		baasCcApi.Post("/requestInstallCCByOther", i.baasService.RequestInstallCCByOther)
+		baasCcApi.Post("/requestApproveCCByOther", i.baasService.RequestApproveCCByOther)
+		baasCcApi.Post("/commitCC", i.baasService.CommitCC)
 
 	}
 
 	exploreCcApi := app.Party("/exploreCc")
 	{
-		exploreCcApi.Get("/exploreQueryInstalledCC", i.exploreService.QueryInstalledCC)
-		exploreCcApi.Post("/exploreInvokeInfoByChaincode", i.exploreService.InvokeInfoByChaincode)
-		exploreCcApi.Get("/exploreQueryInfoByChaincode", i.exploreService.QueryInfoByChaincode)
+		exploreCcApi.Get("/queryInstalledCC", i.exploreService.QueryInstalledCC)
+		exploreCcApi.Post("/invokeInfoByChaincode", i.exploreService.InvokeInfoByChaincode)
+		exploreCcApi.Get("/queryInfoByChaincode", i.exploreService.QueryInfoByChaincode)
 	}
 
 	exploreBlocksApi := app.Party("/exploreBlocks")
 	{
-		exploreBlocksApi.Get("/exploreQueryLastesBlocksInfo", i.exploreService.GetLastesBlocksInfo)
-		exploreBlocksApi.Get("/exploreQueryBlockByBlockNum", i.exploreService.QueryBlockByBlockNum)
-		exploreBlocksApi.Get("/exploreQueryAllBlocksInfo", i.exploreService.QueryAllBlocksInfo)
-		exploreBlocksApi.Get("/exploreQueryBlockInfoByHash", i.exploreService.QueryBlockInfoByHash)
-		exploreBlocksApi.Get("/exploreQueryBlockMainInfo", i.exploreService.QueryBlockMainInfo)
+		exploreBlocksApi.Get("/queryLastesBlocksInfo", i.exploreService.GetLastesBlocksInfo)
+		exploreBlocksApi.Get("/queryBlockByBlockNum", i.exploreService.QueryBlockByBlockNum)
+		exploreBlocksApi.Get("/queryAllBlocksInfo", i.exploreService.QueryAllBlocksInfo)
+		exploreBlocksApi.Get("/queryBlockInfoByHash", i.exploreService.QueryBlockInfoByHash)
+		exploreBlocksApi.Get("/queryBlockMainInfo", i.exploreService.QueryBlockMainInfo)
 
 	}
 
 	exploreTxsApi := app.Party("/exploreTxs")
 	{
-		exploreTxsApi.Get("/exploreQueryTxByTxId", i.exploreService.QueryTxByTxId)
-		exploreTxsApi.Get("/exploreQueryTxByTxIdJsonStr", i.exploreService.QueryTxByTxIdJsonStr)
+		exploreTxsApi.Get("/queryTxByTxId", i.exploreService.QueryTxByTxId)
+		exploreTxsApi.Get("/queryTxByTxIdJsonStr", i.exploreService.QueryTxByTxIdJsonStr)
 	}
 
 	app.Listen(":9099")
